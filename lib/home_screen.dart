@@ -1,8 +1,7 @@
 import 'package:bono/presentation/widgets/menu_lateral.dart';
 import 'package:bono/presentation/widgets/shared/items.dart';
+import 'package:bono/presentation/widgets/shared/menu_list.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
@@ -42,12 +41,14 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
-  void handleMenuAction(BuildContext context, dynamic item) async {
+  void handleMenuAction(MenuItems item) async {
     if (item.ussdCode != null) {
       final Uri ussdUri = Uri(scheme: 'tel', path: item.ussdCode!);
       if (await canLaunchUrl(ussdUri)) {
+        if (!mounted) return; // Verificar si el widget está montado
         await launchUrl(ussdUri);
       } else {
+        if (!mounted) return; // Verificar si el widget está montado
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No se pudo ejecutar el código USSD')),
         );
@@ -153,9 +154,15 @@ class _HomePageState extends State<HomePage>
               controller: _pageController,
               children: [
                 // Vista principal
-                _buildMenuList(menuItems),
+                MenuList(
+                  items: menuItems,
+                  onItemTap: (context, item) => handleMenuAction(item),
+                ),
                 // Vista de historial
-                _buildMenuList(historyItems),
+                MenuList(
+                  items: historyItems,
+                  onItemTap: (context, item) => handleMenuAction(item),
+                ),
               ],
             ),
           ),
@@ -163,66 +170,7 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
-
-  Widget _buildMenuList(List<dynamic> items) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: GestureDetector(
-            onTap: () => handleMenuAction(context, item),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.blue,
-                  child: Icon(
-                    item.icon,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (item.subtitle != null)
-                        Text(
-                          item.subtitle!,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                if (item.hasSubmenu)
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Colors.blue,
-                    size: 30,
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
-
 
 
 // import 'package:bono/home_controller.dart';
