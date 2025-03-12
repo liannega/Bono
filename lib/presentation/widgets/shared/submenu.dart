@@ -1,4 +1,5 @@
 import 'package:bono/config/utils/ussd_service.dart';
+import 'package:bono/home_screen.dart';
 import 'package:bono/presentation/widgets/shared/items.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,9 +46,9 @@ class _SubmenuPageState extends State<SubmenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF212121),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF212121),
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           widget.title,
@@ -89,7 +90,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
                 tag: widget.parentHeroTag!,
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: const Color(0xFF212121),
+                  backgroundColor: backgroundColor,
                   child: Icon(
                     widget.parentIcon ??
                         Icons.folder_open, // Usar el icono del elemento padre
@@ -110,57 +111,71 @@ class _SubmenuPageState extends State<SubmenuPage> {
                 final heroTag = 'submenu_icon_${widget.title}_${item.title}'
                     .replaceAll(" ", "_");
 
+                // ... (código existente)
+
+// En el método build, dentro del ListView.builder, reemplaza el GestureDetector con InkWell:
                 return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 16.0),
-                  child: GestureDetector(
-                    onTap: () => _handleItemTap(context, item, heroTag),
-                    child: Row(
-                      children: [
-                        // Envolver el CircleAvatar en un Hero para la animación
-                        Hero(
-                          tag: heroTag,
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundColor: item.color,
-                            child: Icon(
-                              item.icon,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.title,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Card(
+                    color: Colors.transparent,
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    child: InkWell(
+                      onTap: () => _handleItemTap(context, item, heroTag),
+                      borderRadius: BorderRadius.circular(12),
+                      splashColor: item.color.withOpacity(0.3),
+                      highlightColor: item.color.withOpacity(0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 8.0),
+                        child: Row(
+                          children: [
+                            // Envolver el CircleAvatar en un Hero para la animación
+                            Hero(
+                              tag: heroTag,
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundColor: item.color,
+                                child: Icon(
+                                  item.icon,
                                   color: Colors.white,
+                                  size: 28,
                                 ),
                               ),
-                              if (item.subtitle != null)
-                                Text(
-                                  item.subtitle!,
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 14,
-                                    color: Colors.grey,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.title,
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
+                                  if (item.subtitle != null)
+                                    Text(
+                                      item.subtitle!,
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            if (item.hasSubmenu)
+                              const Icon(
+                                Icons.chevron_right,
+                                color: Colors.blue,
+                                size: 30,
+                              ),
+                          ],
                         ),
-                        if (item.hasSubmenu)
-                          const Icon(
-                            Icons.chevron_right,
-                            color: Colors.blue,
-                            size: 30,
-                          ),
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -280,7 +295,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
   }
 
   // Los métodos para mostrar diálogos permanecen igual
-  // ...
 
   // Diálogo para recargar
   void _showRechargeDialog(BuildContext context) {

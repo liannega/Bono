@@ -23,55 +23,67 @@ class MenuList extends StatelessWidget {
         final heroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: GestureDetector(
-            onTap: () => _handleItemTap(context, item, heroTag),
-            child: Row(
-              children: [
-                // Envolver el CircleAvatar en un Hero para la animación
-                Hero(
-                  tag: heroTag,
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: item.color,
-                    child: Icon(
-                      item.icon,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Card(
+            color: Colors.transparent,
+            elevation: 0,
+            margin: EdgeInsets.zero,
+            child: InkWell(
+              onTap: () => _handleItemTap(context, item, heroTag),
+              borderRadius: BorderRadius.circular(12),
+              splashColor: item.color.withOpacity(0.3),
+              highlightColor: item.color.withOpacity(0.1),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+                child: Row(
+                  children: [
+                    // Envolver el CircleAvatar en un Hero para la animación
+                    Hero(
+                      tag: heroTag,
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: item.color,
+                        child: Icon(
+                          item.icon,
                           color: Colors.white,
+                          size: 30,
                         ),
                       ),
-                      if (item.subtitle != null)
-                        Text(
-                          item.subtitle!,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            color: Colors.grey,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                          if (item.subtitle != null)
+                            Text(
+                              item.subtitle!,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (item.hasSubmenu)
+                      const Icon(
+                        Icons.chevron_right,
+                        color: Colors.blue,
+                        size: 30,
+                      ),
+                  ],
                 ),
-                if (item.hasSubmenu)
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Colors.blue,
-                    size: 30,
-                  ),
-              ],
+              ),
             ),
           ),
         );

@@ -4,6 +4,8 @@ import 'package:bono/presentation/widgets/shared/items.dart';
 import 'package:bono/presentation/widgets/shared/menu_list.dart';
 import 'package:flutter/material.dart';
 
+const backgroundColor = Color.fromARGB(255, 45, 44, 44);
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -102,7 +104,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF212121),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text(
           'BONO',
@@ -113,7 +115,7 @@ class _HomePageState extends State<HomePage>
           ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF212121),
+        backgroundColor: backgroundColor,
         elevation: 0,
         leading: Builder(
           builder: (context) => IconButton(
@@ -170,7 +172,7 @@ class _HomePageState extends State<HomePage>
                     width: 65,
                     height: 65,
                     decoration: BoxDecoration(
-                      color: _currentPage == 0 ? Colors.blue : Colors.grey,
+                      color: _currentPage == 0 ? Colors.blue : backgroundColor,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -180,9 +182,9 @@ class _HomePageState extends State<HomePage>
                     ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 5),
                 // Icono de historial
-                GestureDetector(
+                InkWell(
                   onTap: () {
                     _pageController.animateToPage(
                       1,
@@ -194,7 +196,7 @@ class _HomePageState extends State<HomePage>
                     width: 65,
                     height: 65,
                     decoration: BoxDecoration(
-                      color: _currentPage == 1 ? Colors.blue : Colors.grey,
+                      color: _currentPage == 1 ? Colors.blue : backgroundColor,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
