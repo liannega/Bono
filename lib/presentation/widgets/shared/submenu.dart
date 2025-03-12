@@ -1,27 +1,56 @@
+import 'package:bono/config/utils/ussd_service.dart';
 import 'package:bono/presentation/widgets/shared/items.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class SubmenuPage extends StatelessWidget {
+class SubmenuPage extends StatefulWidget {
   final String title;
   final List<MenuItems> items;
+  final String? parentHeroTag;
+  final IconData? parentIcon; // Agregar el icono del elemento padre
+  final Color? parentColor; // Agregar el color del elemento padre
 
   const SubmenuPage({
     super.key,
     required this.title,
     required this.items,
+    this.parentHeroTag,
+    this.parentIcon, // Icono del elemento padre
+    this.parentColor, // Color del elemento padre
   });
+
+  @override
+  State<SubmenuPage> createState() => _SubmenuPageState();
+}
+
+class _SubmenuPageState extends State<SubmenuPage> {
+  String? _statusMessage;
+  bool _isExecutingUssd = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Verificar permiso al iniciar
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final hasPermission = await UssdService.hasCallPermission();
+    if (!hasPermission) {
+      // Solicitar permiso si no lo tiene
+      await UssdService.requestCallPermission();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color(0xFF212121),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: const Color(0xFF212121),
         elevation: 0,
         title: Text(
-          title,
+          widget.title,
           style: GoogleFonts.montserrat(
             color: Colors.white,
             fontSize: 20,
@@ -33,96 +62,136 @@ class SubmenuPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            child: GestureDetector(
-              onTap: () => _handleItemTap(context, item),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.blue,
-                    child: Icon(
-                      item.icon,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+      body: Column(
+        children: [
+          // Mensaje de estado
+          if (_statusMessage != null)
+            Container(
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.all(8),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _statusMessage!,
+                style: const TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
+          // Icono del elemento padre con animación Hero
+          if (widget.parentHeroTag != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Hero(
+                tag: widget.parentHeroTag!,
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: const Color(0xFF212121),
+                  child: Icon(
+                    widget.parentIcon ??
+                        Icons.folder_open, // Usar el icono del elemento padre
+                    color: Colors.white,
+                    size: 65,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              ),
+            ),
+
+          // Lista de elementos
+          Expanded(
+            child: ListView.builder(
+              itemCount: widget.items.length,
+              itemBuilder: (context, index) {
+                final item = widget.items[index];
+                // Crear un tag único para cada elemento del submenú
+                final heroTag = 'submenu_icon_${widget.title}_${item.title}'
+                    .replaceAll(" ", "_");
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  child: GestureDetector(
+                    onTap: () => _handleItemTap(context, item, heroTag),
+                    child: Row(
                       children: [
-                        Text(
-                          item.title,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
+                        // Envolver el CircleAvatar en un Hero para la animación
+                        Hero(
+                          tag: heroTag,
+                          child: CircleAvatar(
+                            radius: 30,
+                            backgroundColor: item.color,
+                            child: Icon(
+                              item.icon,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                           ),
                         ),
-                        if (item.subtitle != null)
-                          Text(
-                            item.subtitle!,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.title,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (item.subtitle != null)
+                                Text(
+                                  item.subtitle!,
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        if (item.hasSubmenu)
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Colors.blue,
+                            size: 30,
                           ),
                       ],
                     ),
                   ),
-                  if (item.hasSubmenu)
-                    const Icon(
-                      Icons.chevron_right,
-                      color: Colors.blue,
-                      size: 30,
-                    ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
-  void _handleItemTap(BuildContext context, MenuItems item) async {
-    if (item.ussdCode != null) {
-      // Mostrar diálogo de confirmación
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Ejecutar ${item.title}'),
-          content: Text('¿Deseas ejecutar el código ${item.ussdCode}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Ejecutar'),
-            ),
-          ],
+  // Método principal para manejar los toques en los elementos
+  void _handleItemTap(
+      BuildContext context, MenuItems item, String heroTag) async {
+    if (item.hasSubmenu && item.submenuItems != null) {
+      // Navegar al submenú con el heroTag y el icono del elemento
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubmenuPage(
+            title: item.title,
+            items: item.submenuItems!,
+            parentHeroTag: heroTag,
+            parentIcon: item.icon, // Pasar el icono del elemento
+            parentColor: item.color, // Pasar el color del elemento
+          ),
         ),
       );
-
-      if (confirm == true) {
-        final Uri ussdUri = Uri(scheme: 'tel', path: item.ussdCode!);
-        if (await canLaunchUrl(ussdUri)) {
-          await launchUrl(ussdUri);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se pudo ejecutar el código USSD')),
-          );
-        }
-      }
+    } else if (item.ussdCode != null) {
+      // Ejecutar código USSD usando el servicio nativo
+      await _executeUssdCode(item.ussdCode!, item.title);
     } else if (item.title == "Recargar") {
       _showRechargeDialog(context);
     } else if (item.title == "Transferir saldo") {
@@ -132,16 +201,212 @@ class SubmenuPage extends StatelessWidget {
     }
   }
 
-  // Métodos para mostrar diálogos (similares a los de HomePage)
+  // Método centralizado para ejecutar códigos USSD
+  Future<void> _executeUssdCode(String code, String title) async {
+    if (_isExecutingUssd) return; // Evitar múltiples ejecuciones simultáneas
+
+    // Mostrar diálogo de confirmación
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Ejecutar $title'),
+        content: Text('¿Deseas ejecutar el código $code?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ejecutar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // Evitar múltiples ejecuciones simultáneas
+    setState(() {
+      _isExecutingUssd = true;
+      _statusMessage = "Ejecutando código USSD...";
+    });
+
+    try {
+      // Asegurarse de que el código tenga el formato correcto
+      var ussdCode = code.trim();
+      if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
+        ussdCode = "*$ussdCode";
+      }
+
+      if (!ussdCode.endsWith("#")) {
+        ussdCode = "$ussdCode#";
+      }
+
+      // Ejecutar el código USSD usando el servicio nativo
+      final success = await UssdService.executeUssd(ussdCode);
+
+      if (!mounted) return; // Verificar si el widget está montado
+
+      setState(() {
+        if (success) {
+          _statusMessage = "Código USSD ejecutado correctamente";
+        } else {
+          _statusMessage = "Error al ejecutar el código USSD";
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _statusMessage = "Error: ${e.toString()}";
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExecutingUssd = false;
+        });
+
+        // Limpiar el mensaje después de 3 segundos
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _statusMessage = null;
+            });
+          }
+        });
+      }
+    }
+  }
+
+  // Los métodos para mostrar diálogos permanecen igual
+  // ...
+
+  // Diálogo para recargar
   void _showRechargeDialog(BuildContext context) {
-    // Implementación similar a la de HomePage
+    final TextEditingController codeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Recargar Saldo'),
+        content: TextField(
+          controller: codeController,
+          decoration: const InputDecoration(
+            labelText: 'Código de recarga',
+            hintText: 'Ingresa el código de recarga',
+          ),
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final code = codeController.text.trim();
+              if (code.isNotEmpty) {
+                Navigator.pop(context);
+                // Ejecutar el código de recarga
+                await _executeUssdCode("*662*$code", "Recargar Saldo");
+              }
+            },
+            child: const Text('Recargar'),
+          ),
+        ],
+      ),
+    );
   }
 
+  // Diálogo para transferir saldo
   void _showTransferDialog(BuildContext context) {
-    // Implementación similar a la de HomePage
+    final TextEditingController phoneController = TextEditingController();
+    final TextEditingController amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Transferir Saldo'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(
+                labelText: 'Número de teléfono',
+                hintText: 'Ingresa el número de teléfono',
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              decoration: const InputDecoration(
+                labelText: 'Monto a transferir',
+                hintText: 'Ingresa el monto',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final phone = phoneController.text.trim();
+              final amount = amountController.text.trim();
+              if (phone.isNotEmpty && amount.isNotEmpty) {
+                Navigator.pop(context);
+                // Ejecutar el código de transferencia
+                await _executeUssdCode(
+                    "*234*1*$phone*$amount", "Transferir Saldo");
+              }
+            },
+            child: const Text('Transferir'),
+          ),
+        ],
+      ),
+    );
   }
 
+  // Diálogo para llamada normal
   void _showDialerDialog(BuildContext context) {
-    // Implementación similar a la de HomePage
+    final TextEditingController phoneController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Realizar Llamada'),
+        content: TextField(
+          controller: phoneController,
+          decoration: const InputDecoration(
+            labelText: 'Número de teléfono',
+            hintText: 'Ingresa el número de teléfono',
+          ),
+          keyboardType: TextInputType.phone,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final phone = phoneController.text.trim();
+              if (phone.isNotEmpty) {
+                Navigator.pop(context);
+                // Ejecutar la llamada
+                await _executeUssdCode(phone, "Llamada");
+              }
+            },
+            child: const Text('Llamar'),
+          ),
+        ],
+      ),
+    );
   }
 }

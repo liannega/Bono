@@ -23,7 +23,7 @@ class MenuItems {
 // Lista de elementos para la vista principal
 const List<MenuItems> menuItems = [
   MenuItems(
-    title: "Consultar saldo y planes contratados",
+    title: "Consulta tu saldo y planes contratados",
     subtitle: "Consulta tu saldo y planes contratados, todo a la vez",
     icon: Icons.attach_money,
     color: Colors.blue,
@@ -31,17 +31,10 @@ const List<MenuItems> menuItems = [
   ),
   MenuItems(
     title: "Consultar bono",
-    subtitle: "Consulta el estado de tu bono (Ej: El bono .cu)",
+    subtitle: "Consulta el estado de tu bono",
     icon: Icons.star,
     color: Colors.blue,
     ussdCode: "*222*266#", // Código USSD para consultar bono
-  ),
-  MenuItems(
-    title: "Asterisco 99",
-    subtitle: "Llamada con pago revertido",
-    icon: Icons.call,
-    color: Colors.blue,
-    ussdCode: "*99#",
   ),
   MenuItems(
     title: "Gestionar Llamadas",
@@ -102,7 +95,7 @@ const List<MenuItems> menuItems = [
         title: "Planes de datos",
         icon: Icons.data_usage,
         color: Colors.blue,
-        ussdCode: "*133#", // Código para planes de datos
+        ussdCode: "*133*5*3#", // Código para planes de datos
       ),
       MenuItems(
         title: "Planes de voz",
@@ -161,6 +154,7 @@ const List<MenuItems> historyItems = [
     subtitle: "+ 75min VOZ + 80 SMS + 300 MB .cu",
     icon: Icons.sync,
     color: Colors.blue,
+    ussdCode: '*133*5*3#',
   ),
   MenuItems(
     title: "Gestionar Planes",

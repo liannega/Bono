@@ -1,8 +1,8 @@
+import 'package:bono/config/utils/ussd_service.dart';
 import 'package:bono/presentation/widgets/menu_lateral.dart';
 import 'package:bono/presentation/widgets/shared/items.dart';
 import 'package:bono/presentation/widgets/shared/menu_list.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,6 +17,8 @@ class _HomePageState extends State<HomePage>
   late PageController _pageController;
   late TabController _tabController;
   int _currentPage = 0;
+  String? _statusMessage;
+  bool _isExecutingUssd = false;
 
   @override
   void initState() {
@@ -32,6 +34,17 @@ class _HomePageState extends State<HomePage>
         });
       }
     });
+
+    // Verificar permiso al iniciar
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final hasPermission = await UssdService.hasCallPermission();
+    if (!hasPermission) {
+      // Solicitar permiso si no lo tiene
+      await UssdService.requestCallPermission();
+    }
   }
 
   @override
@@ -42,16 +55,46 @@ class _HomePageState extends State<HomePage>
   }
 
   void handleMenuAction(MenuItems item) async {
-    if (item.ussdCode != null) {
-      final Uri ussdUri = Uri(scheme: 'tel', path: item.ussdCode!);
-      if (await canLaunchUrl(ussdUri)) {
+    if (item.ussdCode != null && !_isExecutingUssd) {
+      // Evitar múltiples ejecuciones simultáneas
+      setState(() {
+        _isExecutingUssd = true;
+        _statusMessage = "Ejecutando código USSD...";
+      });
+
+      try {
+        final success = await UssdService.executeUssd(item.ussdCode!);
+
         if (!mounted) return; // Verificar si el widget está montado
-        await launchUrl(ussdUri);
-      } else {
-        if (!mounted) return; // Verificar si el widget está montado
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo ejecutar el código USSD')),
-        );
+
+        setState(() {
+          if (success) {
+            _statusMessage = "Código USSD ejecutado correctamente";
+          } else {
+            _statusMessage = "Error al ejecutar el código USSD";
+          }
+        });
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _statusMessage = "Error: ${e.toString()}";
+          });
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isExecutingUssd = false;
+          });
+
+          // Limpiar el mensaje después de 3 segundos
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted) {
+              setState(() {
+                _statusMessage = null;
+              });
+            }
+          });
+        }
       }
     }
   }
@@ -59,18 +102,18 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color(0xFF212121),
       appBar: AppBar(
         title: const Text(
           'BONO',
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w400,
           ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: const Color(0xFF212121),
         elevation: 0,
         leading: Builder(
           builder: (context) => IconButton(
@@ -91,6 +134,23 @@ class _HomePageState extends State<HomePage>
       ),
       body: Column(
         children: [
+          // Mensaje de estado
+          if (_statusMessage != null)
+            Container(
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.all(8),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _statusMessage!,
+                style: const TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
           // Iconos de navegación superiores
           Container(
             padding: const EdgeInsets.only(top: 10, bottom: 30),
@@ -107,8 +167,8 @@ class _HomePageState extends State<HomePage>
                     );
                   },
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 65,
+                    height: 65,
                     decoration: BoxDecoration(
                       color: _currentPage == 0 ? Colors.blue : Colors.grey,
                       shape: BoxShape.circle,
@@ -116,7 +176,7 @@ class _HomePageState extends State<HomePage>
                     child: const Icon(
                       Icons.phone_android,
                       color: Colors.white,
-                      size: 40,
+                      size: 30,
                     ),
                   ),
                 ),
@@ -131,8 +191,8 @@ class _HomePageState extends State<HomePage>
                     );
                   },
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 65,
+                    height: 65,
                     decoration: BoxDecoration(
                       color: _currentPage == 1 ? Colors.blue : Colors.grey,
                       shape: BoxShape.circle,
@@ -140,7 +200,7 @@ class _HomePageState extends State<HomePage>
                     child: const Icon(
                       Icons.history,
                       color: Colors.white,
-                      size: 40,
+                      size: 30,
                     ),
                   ),
                 ),

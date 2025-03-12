@@ -1,8 +1,7 @@
-// menu_list.dart
 import 'package:bono/presentation/widgets/shared/items.dart';
+import 'package:bono/presentation/widgets/shared/submenu.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 
 class MenuList extends StatelessWidget {
   final List<MenuItems> items;
@@ -20,19 +19,26 @@ class MenuList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
+        // Crear un tag único para cada elemento
+        final heroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
           child: GestureDetector(
-            onTap: () => onItemTap(context, item),
+            onTap: () => _handleItemTap(context, item, heroTag),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: item.color,
-                  child: Icon(
-                    item.icon,
-                    color: Colors.white,
-                    size: 28,
+                // Envolver el CircleAvatar en un Hero para la animación
+                Hero(
+                  tag: heroTag,
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: item.color,
+                    child: Icon(
+                      item.icon,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -71,5 +77,26 @@ class MenuList extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _handleItemTap(BuildContext context, MenuItems item, String heroTag) {
+    if (item.hasSubmenu && item.submenuItems != null) {
+      // Navegar al submenú con el heroTag y el icono del elemento padre
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubmenuPage(
+            title: item.title,
+            items: item.submenuItems!,
+            parentHeroTag: heroTag,
+            parentIcon: item.icon, // Pasar el icono del elemento padre
+            parentColor: item.color, // Pasar el color del elemento padre
+          ),
+        ),
+      );
+    } else {
+      // Llamar a la función onItemTap para manejar otros casos
+      onItemTap(context, item);
+    }
   }
 }
