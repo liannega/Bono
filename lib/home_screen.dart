@@ -1,4 +1,6 @@
 import 'package:bono/config/utils/ussd_service.dart';
+import 'package:bono/history_service.dart';
+import 'package:bono/presentation/views/history_view.dart';
 import 'package:bono/presentation/widgets/menu_lateral.dart';
 import 'package:bono/presentation/widgets/shared/items.dart';
 import 'package:bono/presentation/widgets/shared/menu_list.dart';
@@ -39,6 +41,9 @@ class _HomePageState extends State<HomePage>
 
     // Verificar permiso al iniciar
     _checkPermission();
+
+    // Inicializar el servicio de historial
+    HistoryService.initialize();
   }
 
   Future<void> _checkPermission() async {
@@ -65,13 +70,25 @@ class _HomePageState extends State<HomePage>
       });
 
       try {
-        final success = await UssdService.executeUssd(item.ussdCode!);
+        // Formatear el código USSD correctamente
+        var ussdCode = item.ussdCode!.trim();
+        if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
+          ussdCode = "*$ussdCode";
+        }
+
+        if (!ussdCode.endsWith("#")) {
+          ussdCode = "$ussdCode#";
+        }
+
+        final success = await UssdService.executeUssd(ussdCode);
 
         if (!mounted) return; // Verificar si el widget está montado
 
         setState(() {
           if (success) {
             _statusMessage = "Código USSD ejecutado correctamente";
+            // Agregar al historial si se ejecutó correctamente
+            HistoryService.addToHistory(item, ussdCode);
           } else {
             _statusMessage = "Error al ejecutar el código USSD";
           }
@@ -99,6 +116,22 @@ class _HomePageState extends State<HomePage>
         }
       }
     }
+  }
+
+  // Método para actualizar el mensaje de estado desde la vista de historial
+  void updateStatusMessage(String message) {
+    setState(() {
+      _statusMessage = message;
+    });
+
+    // Limpiar el mensaje después de 3 segundos
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _statusMessage = null;
+        });
+      }
+    });
   }
 
   @override
@@ -221,9 +254,8 @@ class _HomePageState extends State<HomePage>
                   onItemTap: (context, item) => handleMenuAction(item),
                 ),
                 // Vista de historial
-                MenuList(
-                  items: historyItems,
-                  onItemTap: (context, item) => handleMenuAction(item),
+                HistoryView(
+                  onStatusMessage: updateStatusMessage,
                 ),
               ],
             ),
@@ -233,221 +265,3 @@ class _HomePageState extends State<HomePage>
     );
   }
 }
-
-
-// import 'package:bono/home_controller.dart';
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-
-
-// class HomePage extends StatefulWidget {
-//   const HomePage({super.key});
-
-//   @override
-//   State<HomePage> createState() => _HomePageState();
-// }
-
-// class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-//   late HomeController _controller;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller = HomeController(this);
-//     _controller.addListener(() {
-//       if (mounted) setState(() {});
-//     });
-    
-//     // Solicitar permisos al iniciar
-//     _requestPermissions();
-//   }
-//   // Reemplaza el método _requestPermissions con esta versión:
-
-// Future<void> _requestPermissions() async {
-//   // Solicitar permisos necesarios para USSD
-//   await Permission.phone.request();
-// }
- 
-
-//   @override
-//   void dispose() {
-//     _controller.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Stack(
-//       children: [
-//         Scaffold(
-//           backgroundColor: const Color(0xFF121212),
-//           appBar: AppBar(
-//             title: const Text(
-//               'BONO',
-//               style: TextStyle(
-//                 color: Colors.white,
-//                 fontSize: 24,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),
-//             centerTitle: true,
-//             backgroundColor: const Color(0xFF121212),
-//             elevation: 0,
-//             leading: Builder(
-//               builder: (context) => IconButton(
-//                 icon: const Icon(Icons.menu, color: Colors.white),
-//                 onPressed: () {
-//                   Scaffold.of(context).openDrawer();
-//                 },
-//               ),
-//             ),
-//           ),
-//           drawer: CustomDrawer(
-//             isDarkMode: _controller.isDarkMode,
-//             onThemeChanged: (value) {
-//               _controller.toggleTheme(value);
-//             },
-//           ),
-//           body: Column(
-//             children: [
-//               // Iconos de navegación superiores
-//               _buildTabIcons(),
-
-//               // PageView con las dos vistas
-//               Expanded(
-//                 child: PageView(
-//                   controller: _controller.pageController,
-//                   children: [
-//                     // Vista principal
-//                     _buildMenuList(menuItems),
-//                     // Vista de historial
-//                     _buildMenuList(historyItems),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//         // Indicador de carga
-//         if (_controller.isLoading)
-//           Container(
-//             color: Colors.black.withOpacity(0.5),
-//             child: const Center(
-//               child: CircularProgressIndicator(),
-//             ),
-//           ),
-//       ],
-//     );
-//   }
-
-//   // Widget para los iconos de navegación
-//   Widget _buildTabIcons() {
-//     return Container(
-//       padding: const EdgeInsets.only(top: 10, bottom: 30),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           // Icono de teléfono
-//           InkWell(
-//             onTap: () => _controller.goToPage(0),
-//             child: Container(
-//               width: 70,
-//               height: 70,
-//               decoration: BoxDecoration(
-//                 color: _controller.currentPage == 0
-//                     ? Colors.blue
-//                     : const Color(0xFF121212),
-//                 shape: BoxShape.circle,
-//               ),
-//               child: const Icon(
-//                 Icons.phone_android,
-//                 color: Colors.white,
-//                 size: 35,
-//               ),
-//             ),
-//           ),
-//           const SizedBox(width: 10),
-//           // Icono de historial
-//           GestureDetector(
-//             onTap: () => _controller.goToPage(1),
-//             child: Container(
-//               width: 70,
-//               height: 70,
-//               decoration: BoxDecoration(
-//                 color: _controller.currentPage == 1
-//                     ? Colors.blue
-//                     : const Color(0xFF121212),
-//                 shape: BoxShape.circle,
-//               ),
-//               child: const Icon(
-//                 Icons.history,
-//                 color: Colors.white,
-//                 size: 35,
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   // Widget para construir la lista de menú
-//   Widget _buildMenuList(List<dynamic> items) {
-//     return ListView.builder(
-//       itemCount: items.length,
-//       itemBuilder: (context, index) {
-//         final item = items[index];
-//         return Padding(
-//           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-//           child: GestureDetector(
-//             onTap: () => _controller.handleMenuAction(context, item),
-//             child: Row(
-//               children: [
-//                 CircleAvatar(
-//                   radius: 30,
-//                   backgroundColor: Colors.blue,
-//                   child: Icon(
-//                     item.icon,
-//                     color: Colors.white,
-//                     size: 28,
-//                   ),
-//                 ),
-//                 const SizedBox(width: 16),
-//                 Expanded(
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text(
-//                         item.title,
-//                         style: GoogleFonts.montserrat(
-//                           fontSize: 18,
-//                           fontWeight: FontWeight.w500,
-//                           color: Colors.white,
-//                         ),
-//                       ),
-//                       if (item.subtitle != null)
-//                         Text(
-//                           item.subtitle!,
-//                           style: GoogleFonts.montserrat(
-//                             fontSize: 14,
-//                             color: Colors.grey,
-//                           ),
-//                         ),
-//                     ],
-//                   ),
-//                 ),
-//                 if (item.hasSubmenu)
-//                   const Icon(
-//                     Icons.chevron_right,
-//                     color: Colors.blue,
-//                     size: 30,
-//                   ),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-

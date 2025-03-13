@@ -43,7 +43,7 @@ class MainActivity: FlutterActivity() {
                 }
                 "hasCallPermission" -> {
                     val hasPermission = ContextCompat.checkSelfPermission(
-                        this, 
+                        this,
                         Manifest.permission.CALL_PHONE
                     ) == PackageManager.PERMISSION_GRANTED
                     result.success(hasPermission)

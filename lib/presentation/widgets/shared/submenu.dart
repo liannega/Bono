@@ -1,6 +1,8 @@
 import 'package:bono/config/utils/ussd_service.dart';
+import 'package:bono/history_service.dart';
 import 'package:bono/home_screen.dart';
 import 'package:bono/presentation/widgets/shared/items.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -8,16 +10,16 @@ class SubmenuPage extends StatefulWidget {
   final String title;
   final List<MenuItems> items;
   final String? parentHeroTag;
-  final IconData? parentIcon; // Agregar el icono del elemento padre
-  final Color? parentColor; // Agregar el color del elemento padre
+  final IconData? parentIcon;
+  final Color? parentColor;
 
   const SubmenuPage({
     super.key,
     required this.title,
     required this.items,
     this.parentHeroTag,
-    this.parentIcon, // Icono del elemento padre
-    this.parentColor, // Color del elemento padre
+    this.parentIcon,
+    this.parentColor,
   });
 
   @override
@@ -90,12 +92,11 @@ class _SubmenuPageState extends State<SubmenuPage> {
                 tag: widget.parentHeroTag!,
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: backgroundColor,
+                  backgroundColor: widget.parentColor ?? Colors.blue,
                   child: Icon(
-                    widget.parentIcon ??
-                        Icons.folder_open, // Usar el icono del elemento padre
+                    widget.parentIcon ?? Icons.folder_open,
                     color: Colors.white,
-                    size: 65,
+                    size: 36,
                   ),
                 ),
               ),
@@ -111,11 +112,8 @@ class _SubmenuPageState extends State<SubmenuPage> {
                 final heroTag = 'submenu_icon_${widget.title}_${item.title}'
                     .replaceAll(" ", "_");
 
-                // ... (código existente)
-
-// En el método build, dentro del ListView.builder, reemplaza el GestureDetector con InkWell:
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: Card(
                     color: Colors.transparent,
                     elevation: 0,
@@ -127,7 +125,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
                       highlightColor: item.color.withOpacity(0.1),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            vertical: 10.0, horizontal: 8.0),
+                            vertical: 6.0, horizontal: 8.0),
                         child: Row(
                           children: [
                             // Envolver el CircleAvatar en un Hero para la animación
@@ -139,7 +137,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
                                 child: Icon(
                                   item.icon,
                                   color: Colors.white,
-                                  size: 28,
+                                  size: 30,
                                 ),
                               ),
                             ),
@@ -199,14 +197,22 @@ class _SubmenuPageState extends State<SubmenuPage> {
             title: item.title,
             items: item.submenuItems!,
             parentHeroTag: heroTag,
-            parentIcon: item.icon, // Pasar el icono del elemento
-            parentColor: item.color, // Pasar el color del elemento
+            parentIcon: item.icon,
+            parentColor: item.color,
           ),
         ),
       );
     } else if (item.ussdCode != null) {
-      // Ejecutar código USSD usando el servicio nativo
-      await _executeUssdCode(item.ussdCode!, item.title);
+      // Verificar si estamos en el submenú "Gestionar Planes" o si es "Consultar Saldo" en "Gestionar Saldo"
+      if (widget.title == "Gestionar Planes" ||
+          (widget.title == "Gestionar Saldo" &&
+              item.title == "Consultar Saldo")) {
+        // Ejecutar el código USSD directamente sin confirmación
+        await _executeUssdCodeDirectly(item.ussdCode!, item.title, item);
+      } else {
+        // Para otros submenús, mostrar confirmación
+        await _executeUssdCode(item.ussdCode!, item.title, item);
+      }
     } else if (item.title == "Recargar") {
       _showRechargeDialog(context);
     } else if (item.title == "Transferir saldo") {
@@ -216,30 +222,10 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Método centralizado para ejecutar códigos USSD
-  Future<void> _executeUssdCode(String code, String title) async {
+  // Método para ejecutar códigos USSD directamente sin confirmación
+  Future<void> _executeUssdCodeDirectly(
+      String code, String title, MenuItems item) async {
     if (_isExecutingUssd) return; // Evitar múltiples ejecuciones simultáneas
-
-    // Mostrar diálogo de confirmación
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Ejecutar $title'),
-        content: Text('¿Deseas ejecutar el código $code?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ejecutar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
 
     // Evitar múltiples ejecuciones simultáneas
     setState(() {
@@ -266,6 +252,8 @@ class _SubmenuPageState extends State<SubmenuPage> {
       setState(() {
         if (success) {
           _statusMessage = "Código USSD ejecutado correctamente";
+          // Agregar al historial si se ejecutó correctamente
+          HistoryService.addToHistory(item, ussdCode);
         } else {
           _statusMessage = "Error al ejecutar el código USSD";
         }
@@ -294,7 +282,35 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Los métodos para mostrar diálogos permanecen igual
+  // Método centralizado para ejecutar códigos USSD con confirmación
+  Future<void> _executeUssdCode(
+      String code, String title, MenuItems item) async {
+    if (_isExecutingUssd) return; // Evitar múltiples ejecuciones simultáneas
+
+    // Mostrar diálogo de confirmación
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Ejecutar $title'),
+        content: Text('¿Deseas ejecutar el código $code?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ejecutar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // Ejecutar el código USSD directamente
+    await _executeUssdCodeDirectly(code, title, item);
+  }
 
   // Diálogo para recargar
   void _showRechargeDialog(BuildContext context) {
@@ -322,8 +338,19 @@ class _SubmenuPageState extends State<SubmenuPage> {
               final code = codeController.text.trim();
               if (code.isNotEmpty) {
                 Navigator.pop(context);
+
+                // Crear un elemento de menú temporal para el historial
+                final rechargeItem = MenuItems(
+                  title: "Recargar Saldo",
+                  subtitle: "Código: $code",
+                  icon: Icons.add_card,
+                  color: Colors.green,
+                  ussdCode: "*662*$code",
+                );
+
                 // Ejecutar el código de recarga
-                await _executeUssdCode("*662*$code", "Recargar Saldo");
+                await _executeUssdCodeDirectly(
+                    "*662*$code", "Recargar Saldo", rechargeItem);
               }
             },
             child: const Text('Recargar'),
@@ -375,9 +402,19 @@ class _SubmenuPageState extends State<SubmenuPage> {
               final amount = amountController.text.trim();
               if (phone.isNotEmpty && amount.isNotEmpty) {
                 Navigator.pop(context);
+
+                // Crear un elemento de menú temporal para el historial
+                final transferItem = MenuItems(
+                  title: "Transferir Saldo",
+                  subtitle: "A: $phone, Monto: $amount",
+                  icon: Icons.send_to_mobile,
+                  color: Colors.orange,
+                  ussdCode: "*234*1*$phone*$amount",
+                );
+
                 // Ejecutar el código de transferencia
-                await _executeUssdCode(
-                    "*234*1*$phone*$amount", "Transferir Saldo");
+                await _executeUssdCodeDirectly(
+                    "*234*1*$phone*$amount", "Transferir Saldo", transferItem);
               }
             },
             child: const Text('Transferir'),
@@ -413,8 +450,18 @@ class _SubmenuPageState extends State<SubmenuPage> {
               final phone = phoneController.text.trim();
               if (phone.isNotEmpty) {
                 Navigator.pop(context);
+
+                // Crear un elemento de menú temporal para el historial
+                final callItem = MenuItems(
+                  title: "Llamada",
+                  subtitle: "Número: $phone",
+                  icon: Icons.call,
+                  color: Colors.green,
+                  ussdCode: phone,
+                );
+
                 // Ejecutar la llamada
-                await _executeUssdCode(phone, "Llamada");
+                await _executeUssdCodeDirectly(phone, "Llamada", callItem);
               }
             },
             child: const Text('Llamar'),
