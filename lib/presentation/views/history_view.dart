@@ -1,9 +1,11 @@
 import 'package:bono/history_service.dart';
-import 'package:bono/presentation/screens/history_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bono/config/utils/ussd_service.dart';
+
+import '../../models/history_model.dart';
 
 class HistoryView extends StatefulWidget {
   final Function(String) onStatusMessage;
@@ -88,7 +90,7 @@ class _HistoryViewState extends State<HistoryView> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: const Color.fromARGB(255, 166, 213, 245),
             ),
             child: const Text('Limpiar'),
           ),
@@ -152,7 +154,7 @@ class _HistoryViewState extends State<HistoryView> {
             icon: const Icon(Icons.delete_sweep),
             label: const Text('Limpiar historial'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: const Color.fromARGB(255, 166, 213, 245),
             ),
           ),
         ),
