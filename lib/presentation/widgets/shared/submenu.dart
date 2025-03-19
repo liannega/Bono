@@ -12,6 +12,7 @@ class SubmenuPage extends StatefulWidget {
   final String? parentHeroTag;
   final IconData? parentIcon;
   final Color? parentColor;
+  final String? parentTitle; // Añadido para rastrear el título del padre
 
   const SubmenuPage({
     super.key,
@@ -20,6 +21,7 @@ class SubmenuPage extends StatefulWidget {
     this.parentHeroTag,
     this.parentIcon,
     this.parentColor,
+    this.parentTitle,
   });
 
   @override
@@ -45,8 +47,99 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
+  // Obtener el icono grande para mostrar en la parte superior según el título
+  Widget _getHeaderIcon() {
+    double iconSize = 80.0;
+    Color iconColor = Colors.white;
+
+    switch (widget.title) {
+      case "Planes Combinados":
+        return Icon(
+          Icons.sync,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "Planes de Datos":
+        return Icon(
+          Icons.data_usage,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "Planes de Voz":
+        return Icon(
+          Icons.phone_in_talk,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "Planes de SMS":
+        return Icon(
+          Icons.sms,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "Plan amigos":
+        return Icon(
+          Icons.people,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "Gestionar Planes":
+        return Icon(
+          Icons.shopping_cart,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "Tarifa por consumo":
+        return Icon(
+          Icons.trending_up,
+          color: iconColor,
+          size: iconSize,
+        );
+      case "SOLO Líneas USIM con LTE (nuevas)":
+        return Icon(
+          Icons.data_usage,
+          color: iconColor,
+          size: iconSize,
+        );
+      default:
+        // Si hay un icono padre, mostrar ese
+        if (widget.parentIcon != null) {
+          return Icon(
+            widget.parentIcon!,
+            color: iconColor,
+            size: iconSize,
+          );
+        }
+        // Icono por defecto
+        return Icon(
+          Icons.folder_open,
+          color: iconColor,
+          size: iconSize,
+        );
+    }
+  }
+
+  // Determinar si un elemento debe mostrar una flecha a la derecha
+  bool _shouldShowChevron(MenuItems item) {
+    // Mostrar flecha para elementos con submenú
+    if (item.hasSubmenu) return true;
+
+    // Mostrar flecha para elementos específicos que tienen navegación adicional
+    if (widget.title == "Planes de Datos") {
+      return item.title == "Tarifa por consumo" ||
+          item.title == "SOLO Líneas USIM con LTE (nuevas)";
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isManagePlans = widget.title == "Gestionar Planes";
+    final isPlanSubmenu = widget.title.startsWith("Plan") ||
+        widget.title == "Tarifa por consumo" ||
+        widget.title == "SOLO Líneas USIM con LTE (nuevas)";
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -85,7 +178,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
             ),
 
           // Icono del elemento padre con animación Hero
-          if (widget.parentHeroTag != null)
+          if (widget.parentHeroTag != null && !isPlanSubmenu)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Hero(
@@ -102,13 +195,22 @@ class _SubmenuPageState extends State<SubmenuPage> {
               ),
             ),
 
+          // Icono grande para los submenús de planes
+          if (isPlanSubmenu)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: _getHeaderIcon(),
+            ),
+
           // Lista de elementos
           Expanded(
             child: ListView.builder(
               itemCount: widget.items.length,
               itemBuilder: (context, index) {
                 final item = widget.items[index];
+
                 // Crear un tag único para cada elemento del submenú
+                // Incluir el título del padre para asegurar unicidad
                 final heroTag = 'submenu_icon_${widget.title}_${item.title}'
                     .replaceAll(" ", "_");
 
@@ -117,7 +219,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
                   child: Card(
                     color: Colors.transparent,
                     elevation: 0,
-                    margin: EdgeInsets.zero,
+                    margin: const EdgeInsets.symmetric(vertical: 4.0),
                     child: InkWell(
                       onTap: () => _handleItemTap(context, item, heroTag),
                       borderRadius: BorderRadius.circular(12),
@@ -133,7 +235,8 @@ class _SubmenuPageState extends State<SubmenuPage> {
                               tag: heroTag,
                               child: CircleAvatar(
                                 radius: 30,
-                                backgroundColor: item.color,
+                                backgroundColor: Colors
+                                    .blue, // Todos los círculos son azules en los submenús de planes
                                 child: Icon(
                                   item.icon,
                                   color: Colors.white,
@@ -165,7 +268,8 @@ class _SubmenuPageState extends State<SubmenuPage> {
                                 ],
                               ),
                             ),
-                            if (item.hasSubmenu)
+                            // Flecha a la derecha para elementos con submenú o navegación adicional
+                            if (_shouldShowChevron(item))
                               const Icon(
                                 Icons.chevron_right,
                                 color: Colors.blue,
@@ -199,15 +303,19 @@ class _SubmenuPageState extends State<SubmenuPage> {
             parentHeroTag: heroTag,
             parentIcon: item.icon,
             parentColor: item.color,
+            parentTitle:
+                widget.title, // Pasar el título actual como título del padre
           ),
         ),
       );
     } else if (item.ussdCode != null) {
-      // Verificar si estamos en el submenú "Gestionar Planes" o si es "Consultar Saldo" en "Gestionar Saldo"
-      if (widget.title == "Gestionar Planes" ||
+      // Ejecutar el código USSD directamente sin confirmación para todos los submenús de planes
+      if (widget.title.startsWith("Plan") ||
+          widget.title == "Gestionar Planes" ||
+          widget.title == "Tarifa por consumo" ||
+          widget.title == "SOLO Líneas USIM con LTE (nuevas)" ||
           (widget.title == "Gestionar Saldo" &&
               item.title == "Consultar Saldo")) {
-        // Ejecutar el código USSD directamente sin confirmación
         await _executeUssdCodeDirectly(item.ussdCode!, item.title, item);
       } else {
         // Para otros submenús, mostrar confirmación

@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage>
     });
 
     // Limpiar el mensaje después de 3 segundos
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
           _statusMessage = null;

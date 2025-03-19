@@ -28,10 +28,63 @@ class HistoryService {
     return List.from(_cachedHistory);
   }
 
-  // Agregar un elemento al historial
+  // Verificar si un elemento ya existe en el historial
+  static Future<bool> itemExists(String code) async {
+    await initialize();
+
+    // Normalizar el código para la comparación
+    var normalizedCode = code.trim();
+    if (!normalizedCode.startsWith("*") && !normalizedCode.startsWith("#")) {
+      normalizedCode = "*$normalizedCode";
+    }
+    if (!normalizedCode.endsWith("#")) {
+      normalizedCode = "$normalizedCode#";
+    }
+
+    // Buscar el elemento por código
+    return _cachedHistory.any((item) {
+      var itemCode = item.code.trim();
+      if (!itemCode.startsWith("*") && !itemCode.startsWith("#")) {
+        itemCode = "*$itemCode";
+      }
+      if (!itemCode.endsWith("#")) {
+        itemCode = "$itemCode#";
+      }
+      return itemCode == normalizedCode;
+    });
+  }
+
+  // Agregar un elemento al historial o actualizar si ya existe
   static Future<void> addToHistory(MenuItems item, String code) async {
     await initialize();
 
+    // Normalizar el código para la comparación
+    var normalizedCode = code.trim();
+    if (!normalizedCode.startsWith("*") && !normalizedCode.startsWith("#")) {
+      normalizedCode = "*$normalizedCode";
+    }
+    if (!normalizedCode.endsWith("#")) {
+      normalizedCode = "$normalizedCode#";
+    }
+
+    // Buscar si ya existe un elemento con el mismo código
+    final existingIndex = _cachedHistory.indexWhere((historyItem) {
+      var itemCode = historyItem.code.trim();
+      if (!itemCode.startsWith("*") && !itemCode.startsWith("#")) {
+        itemCode = "*$itemCode";
+      }
+      if (!itemCode.endsWith("#")) {
+        itemCode = "$itemCode#";
+      }
+      return itemCode == normalizedCode;
+    });
+
+    if (existingIndex != -1) {
+      // Si existe, eliminar el elemento antiguo
+      _cachedHistory.removeAt(existingIndex);
+    }
+
+    // Crear un nuevo elemento con la fecha actual
     final historyItem = HistoryItem(
       title: item.title,
       subtitle: item.subtitle,
@@ -51,6 +104,27 @@ class HistoryService {
 
     // Guardar en SharedPreferences
     await _saveHistory();
+  }
+
+  // Método para actualizar un elemento del historial
+  static Future<void> updateHistoryItem(
+      HistoryItem oldItem, HistoryItem newItem) async {
+    await initialize();
+
+    // Buscar el índice del elemento antiguo
+    final index = _cachedHistory.indexWhere(
+        (item) => item.title == oldItem.title && item.code == oldItem.code);
+
+    if (index != -1) {
+      // Eliminar el elemento antiguo
+      _cachedHistory.removeAt(index);
+
+      // Insertar el nuevo elemento en la primera posición
+      _cachedHistory.insert(0, newItem);
+
+      // Guardar en SharedPreferences
+      await _saveHistory();
+    }
   }
 
   // Limpiar el historial
