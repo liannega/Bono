@@ -1,5 +1,5 @@
 name: bono
-description: "A new Flutter project."
+description: "Aplicacion para gestionar planes y servicios de Etecsa"
 publish_to: 'none'
 version: 0.1.0
 
@@ -19,6 +19,8 @@ dependencies:
   permission_handler: ^11.3.0
   shared_preferences: ^2.5.2
   intl: ^0.20.2
+  cupertino_icons: ^1.0.8
+  home_widget: 0.7.0
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,7 @@
-import 'package:bono/home_screen.dart';
+import 'package:bono/services/widget_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -10,8 +11,32 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool isFloatingWidgetEnabled = false;
+  bool isWidgetEnabled = false;
   bool isWifiDisconnectEnabled = true;
+  final Color backgroundColor = const Color(0xFF333333);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  // Cargar configuraciones guardadas
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isWidgetEnabled = prefs.getBool('widget_enabled') ?? false;
+      isWifiDisconnectEnabled =
+          prefs.getBool('wifi_disconnect_enabled') ?? true;
+    });
+  }
+
+  // Guardar configuraciones
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('widget_enabled', isWidgetEnabled);
+    await prefs.setBool('wifi_disconnect_enabled', isWifiDisconnectEnabled);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,22 +69,31 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 20),
                   // Switches
                   _buildSwitchTile(
-                    'Activar widget flotante',
-                    isFloatingWidgetEnabled,
-                    (value) {
+                    'Activar widget de pantalla',
+                    isWidgetEnabled,
+                    (value) async {
                       setState(() {
-                        isFloatingWidgetEnabled = value;
+                        isWidgetEnabled = value;
                       });
+                      await _saveSettings();
+
+                      // Activar o desactivar el widget de pantalla
+                      if (value) {
+                        await WidgetService.enableWidget();
+                      } else {
+                        await WidgetService.disableWidget();
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
                   _buildSwitchTile(
                     'Apagar wifi al desconectar',
                     isWifiDisconnectEnabled,
-                    (value) {
+                    (value) async {
                       setState(() {
                         isWifiDisconnectEnabled = value;
                       });
+                      await _saveSettings();
                     },
                   ),
                   const SizedBox(height: 32),

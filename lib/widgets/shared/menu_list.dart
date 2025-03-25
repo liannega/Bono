@@ -1,5 +1,5 @@
-import 'package:bono/presentation/widgets/shared/items.dart';
-import 'package:bono/presentation/widgets/shared/submenu.dart';
+import 'package:bono/widgets/shared/items.dart';
+import 'package:bono/widgets/shared/submenu.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

@@ -1,7 +1,7 @@
 import 'package:bono/config/utils/ussd_service.dart';
-import 'package:bono/history_service.dart';
-import 'package:bono/home_screen.dart';
-import 'package:bono/presentation/widgets/shared/items.dart';
+import 'package:bono/home_page.dart';
+import 'package:bono/services/history_service.dart';
+import 'package:bono/widgets/shared/items.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

@@ -1,9 +1,9 @@
 import 'package:bono/config/utils/ussd_service.dart';
-import 'package:bono/history_service.dart';
-import 'package:bono/presentation/views/history_view.dart';
-import 'package:bono/presentation/widgets/menu_lateral.dart';
-import 'package:bono/presentation/widgets/shared/items.dart';
-import 'package:bono/presentation/widgets/shared/menu_list.dart';
+import 'package:bono/services/history_service.dart';
+import 'package:bono/presentation/pages/history_view.dart';
+import 'package:bono/widgets/shared/menu_lateral.dart';
+import 'package:bono/widgets/shared/items.dart';
+import 'package:bono/widgets/shared/menu_list.dart';
 import 'package:flutter/material.dart';
 
 const backgroundColor = Color.fromARGB(255, 45, 44, 44);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:bono/models/history_model.dart';
+import 'package:bono/widgets/shared/items.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bono/presentation/widgets/shared/items.dart';
 
 class HistoryService {
   static const String _historyKey = 'ussd_history';

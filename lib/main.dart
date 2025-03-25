@@ -1,24 +1,42 @@
-import 'package:bono/config/router/app_router.dart';
+
+import 'package:bono/home_page.dart';
+import 'package:bono/services/widget_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+void main() async {
+  // Asegurarse de que los widgets estén inicializados
+  WidgetsFlutterBinding.ensureInitialized();
 
-Future<void> main() async {
-  runApp(const ProviderScope(child: MainApp()));
+  // Verificar si el widget está habilitado en las preferencias
+  final prefs = await SharedPreferences.getInstance();
+  final isWidgetEnabled = prefs.getBool('widget_enabled') ?? false;
+
+  // Si el widget está habilitado, actualizarlo
+  if (isWidgetEnabled) {
+    try {
+      await WidgetService.enableWidget();
+    } catch (e) {
+      print('Error al actualizar widget: $e');
+    }
+  }
+
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Lily Designs',
-      routerConfig: approuter,
+    return MaterialApp(
+      title: 'BONO',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      home: const HomePage(),
     );
   }
 }

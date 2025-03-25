@@ -1,4 +1,4 @@
-import 'package:bono/home_screen.dart';
+import 'package:bono/home_page.dart';
 import 'package:go_router/go_router.dart';
 
 final approuter = GoRouter(initialLocation: '/', routes: [
@@ -7,3 +7,5 @@ final approuter = GoRouter(initialLocation: '/', routes: [
     builder: (context, state) => const HomePage(),
   ),
 ]);
+
+

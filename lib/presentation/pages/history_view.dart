@@ -1,4 +1,4 @@
-import 'package:bono/history_service.dart';
+import 'package:bono/services/history_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -68,7 +68,7 @@ class _HistoryViewState extends State<HistoryView> {
 
       if (success) {
         widget.onStatusMessage("Código USSD ejecutado correctamente");
-        
+
         // No agregamos al historial cuando se ejecuta desde la vista de historial
         // Solo actualizamos la fecha del elemento actual
         await _updateHistoryItemTimestamp(item);
@@ -85,7 +85,7 @@ class _HistoryViewState extends State<HistoryView> {
         setState(() {
           _isExecutingUssd = false;
         });
-        
+
         // Limpiar el mensaje después de 3 segundos
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
@@ -95,7 +95,7 @@ class _HistoryViewState extends State<HistoryView> {
       }
     }
   }
-  
+
   // Método para actualizar la fecha de un elemento del historial
   Future<void> _updateHistoryItemTimestamp(HistoryItem item) async {
     // Crear un nuevo elemento con la misma información pero con la fecha actual
@@ -107,7 +107,7 @@ class _HistoryViewState extends State<HistoryView> {
       code: item.code,
       timestamp: DateTime.now(),
     );
-    
+
     // Eliminar el elemento antiguo y agregar el actualizado
     await HistoryService.updateHistoryItem(item, updatedItem);
   }
@@ -139,7 +139,7 @@ class _HistoryViewState extends State<HistoryView> {
       await HistoryService.clearHistory();
       await _loadHistory();
       widget.onStatusMessage("Historial eliminado");
-      
+
       // Limpiar el mensaje después de 2 segundos
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {

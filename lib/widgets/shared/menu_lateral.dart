@@ -1,4 +1,4 @@
-import 'package:bono/presentation/views/settings.dart';
+import 'package:bono/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {

@@ -174,8 +174,7 @@ const List<MenuItems> menuItems = [
           ),
           MenuItems(
             title: "SOLO Líneas USIM con LTE (nuevas)",
-            subtitle:
-                "Paquetes de internet para usuarios que tienen activado el servicio LTE.",
+            subtitle: "Paquetes de internet para usuarios que tienen activado el servicio LTE.",
             icon: Icons.data_usage,
             color: Colors.blue,
             hasSubmenu: true,
@@ -426,3 +425,4 @@ const List<MenuItems> historyItems = [
     color: Colors.blue,
   ),
 ];
+
