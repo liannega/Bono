@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:bono/models/history_model.dart';
-import 'package:bono/widgets/shared/items.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bono/widgets/shared/items.dart';
 
 class HistoryService {
   static const String _historyKey = 'ussd_history';
@@ -67,21 +67,37 @@ class HistoryService {
       normalizedCode = "$normalizedCode#";
     }
 
-    // Buscar si ya existe un elemento con el mismo código
-    final existingIndex = _cachedHistory.indexWhere((historyItem) {
-      var itemCode = historyItem.code.trim();
-      if (!itemCode.startsWith("*") && !itemCode.startsWith("#")) {
-        itemCode = "*$itemCode";
-      }
-      if (!itemCode.endsWith("#")) {
-        itemCode = "$itemCode#";
-      }
-      return itemCode == normalizedCode;
-    });
+    // Casos especiales para Asterisco 99 y Mi número oculto
+    bool isSpecialCase =
+        item.title == "Asterisco 99" || item.title == "Mi número oculto";
 
-    if (existingIndex != -1) {
-      // Si existe, eliminar el elemento antiguo
-      _cachedHistory.removeAt(existingIndex);
+    // Si es un caso especial, buscar por título en lugar de código
+    if (isSpecialCase) {
+      // Buscar si ya existe un elemento con el mismo título
+      final existingIndex = _cachedHistory
+          .indexWhere((historyItem) => historyItem.title == item.title);
+
+      if (existingIndex != -1) {
+        // Si existe, eliminar el elemento antiguo
+        _cachedHistory.removeAt(existingIndex);
+      }
+    } else {
+      // Para otros casos, buscar por código como antes
+      final existingIndex = _cachedHistory.indexWhere((historyItem) {
+        var itemCode = historyItem.code.trim();
+        if (!itemCode.startsWith("*") && !itemCode.startsWith("#")) {
+          itemCode = "*$itemCode";
+        }
+        if (!itemCode.endsWith("#")) {
+          itemCode = "$itemCode#";
+        }
+        return itemCode == normalizedCode;
+      });
+
+      if (existingIndex != -1) {
+        // Si existe, eliminar el elemento antiguo
+        _cachedHistory.removeAt(existingIndex);
+      }
     }
 
     // Crear un nuevo elemento con la fecha actual
@@ -111,9 +127,20 @@ class HistoryService {
       HistoryItem oldItem, HistoryItem newItem) async {
     await initialize();
 
-    // Buscar el índice del elemento antiguo
-    final index = _cachedHistory.indexWhere(
-        (item) => item.title == oldItem.title && item.code == oldItem.code);
+    // Casos especiales para Asterisco 99 y Mi número oculto
+    bool isSpecialCase =
+        oldItem.title == "Asterisco 99" || oldItem.title == "Mi número oculto";
+
+    int index;
+
+    if (isSpecialCase) {
+      // Buscar por título para casos especiales
+      index = _cachedHistory.indexWhere((item) => item.title == oldItem.title);
+    } else {
+      // Buscar por título y código para casos normales
+      index = _cachedHistory.indexWhere(
+          (item) => item.title == oldItem.title && item.code == oldItem.code);
+    }
 
     if (index != -1) {
       // Eliminar el elemento antiguo

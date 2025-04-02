@@ -2,27 +2,63 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FF5722"
+    android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="8dp">
 
-    <!-- Título -->
-    <TextView
+    <!-- Encabezado -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="BONO"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="8dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <!-- Logo circular -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/round_button_background"
+            android:padding="8dp"
+            android:src="@drawable/ic_logo" />
+
+        <!-- Título -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="BONO"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:layout_marginStart="12dp" />
+
+        <!-- Botones de WiFi y Datos -->
+        <ImageView
+            android:id="@+id/btn_data"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/square_button_background"
+            android:padding="8dp"
+            android:src="@drawable/ic_data_simple"
+            android:layout_marginEnd="8dp" />
+
+        <ImageView
+            android:id="@+id/btn_wifi"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/square_button_background"
+            android:padding="8dp"
+            android:src="@drawable/ic_wifi" />
+    </LinearLayout>
 
     <!-- Botones principales -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center_horizontal"
+        android:layout_marginTop="4dp">
 
         <!-- Saldo -->
         <LinearLayout
@@ -35,23 +71,12 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="#D84315"
-                android:gravity="center"
-                android:text="$"
-                android:textColor="#FFFFFF"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Saldo"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/round_button_background"
+                android:padding="10dp"
+                android:src="@drawable/ic_money" />
         </LinearLayout>
 
         <!-- Bono -->
@@ -65,23 +90,12 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="#D84315"
-                android:gravity="center"
-                android:text="★"
-                android:textColor="#FFFFFF"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Bono"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/round_button_background"
+                android:padding="10dp"
+                android:src="@drawable/ic_star" />
         </LinearLayout>
 
         <!-- Datos -->
@@ -95,23 +109,12 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="#D84315"
-                android:gravity="center"
-                android:text="MB"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Datos"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/round_button_background"
+                android:padding="10dp"
+                android:src="@drawable/ic_data" />
         </LinearLayout>
 
         <!-- Minutos -->
@@ -125,55 +128,35 @@
             android:clickable="true"
             android:focusable="true">
 
-            <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="#D84315"
-                android:gravity="center"
-                android:text="⏱"
-                android:textColor="#FFFFFF"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/round_button_background"
+                android:padding="10dp"
+                android:src="@drawable/ic_phone" />
+        </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Minutos"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+        <!-- SMS -->
+        <LinearLayout
+            android:id="@+id/btn_sms"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/round_button_background"
+                android:padding="10dp"
+                android:src="@drawable/ic_message" />
         </LinearLayout>
     </LinearLayout>
-
-    <!-- Botones de WiFi y Datos -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="8dp">
-
-        <Button
-            android:id="@+id/btn_wifi"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="WiFi"
-            android:textColor="#FFFFFF"
-            android:background="#D84315"
-            android:layout_marginEnd="4dp" />
-
-        <Button
-            android:id="@+id/btn_data"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Datos"
-            android:textColor="#FFFFFF"
-            android:background="#D84315"
-            android:layout_marginStart="4dp" />
-    </LinearLayout>
 </LinearLayout>
+
 
 
 

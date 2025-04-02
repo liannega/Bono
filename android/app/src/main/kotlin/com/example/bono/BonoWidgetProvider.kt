@@ -27,7 +27,7 @@ class BonoWidgetProvider : AppWidgetProvider() {
             try {
                 Log.d("BonoWidget", "Updating widget $widgetId")
                 
-                // Crear RemoteViews con el layout simplificado
+                // Crear RemoteViews con el layout mejorado
                 val views = RemoteViews(context.packageName, R.layout.bono_widget)
                 
                 // Verificar permisos antes de configurar los botones USSD
@@ -55,6 +55,10 @@ class BonoWidgetProvider : AppWidgetProvider() {
                     // Minutos
                     val minutesIntent = createUssdIntent(context, "*222*869#")
                     views.setOnClickPendingIntent(R.id.btn_minutes, minutesIntent)
+                    
+                    // SMS
+                    val smsIntent = createUssdIntent(context, "*222*767#")
+                    views.setOnClickPendingIntent(R.id.btn_sms, smsIntent)
                 } else {
                     // Si no hay permiso, todos los botones abrirán la app para solicitar permiso
                     Log.d("BonoWidget", "No call permission, setting all buttons to open app")
@@ -71,6 +75,7 @@ class BonoWidgetProvider : AppWidgetProvider() {
                     views.setOnClickPendingIntent(R.id.btn_bonus, pendingRequestIntent)
                     views.setOnClickPendingIntent(R.id.btn_data_usage, pendingRequestIntent)
                     views.setOnClickPendingIntent(R.id.btn_minutes, pendingRequestIntent)
+                    views.setOnClickPendingIntent(R.id.btn_sms, pendingRequestIntent)
                 }
                 
                 // WiFi
@@ -95,6 +100,16 @@ class BonoWidgetProvider : AppWidgetProvider() {
                 )
                 views.setOnClickPendingIntent(R.id.btn_data, pendingMobileDataIntent)
                 
+                // Logo abre la app
+                val openAppIntent = Intent(context, MainActivity::class.java)
+                val pendingOpenAppIntent = PendingIntent.getActivity(
+                    context, 
+                    3, 
+                    openAppIntent, 
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.logo, pendingOpenAppIntent)
+                
                 // Actualizar el widget
                 appWidgetManager.updateAppWidget(widgetId, views)
                 Log.d("BonoWidget", "Widget $widgetId updated successfully")
@@ -116,7 +131,7 @@ class BonoWidgetProvider : AppWidgetProvider() {
                     )
                     
                     // Configurar el widget para abrir la app al tocarlo
-                    errorViews.setOnClickPendingIntent(R.id.error_title, pendingIntent)
+                    errorViews.setOnClickPendingIntent(R.id.error_container, pendingIntent)
                     
                     // Actualizar el widget
                     appWidgetManager.updateAppWidget(widgetId, errorViews)
@@ -134,14 +149,21 @@ class BonoWidgetProvider : AppWidgetProvider() {
             Log.d("BonoWidget", "Creating USSD intent for code: $code")
             
             // Formatear el código USSD correctamente
-            val ussdCode = code.trim()
-            val ussdUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Para Android 8.0 (Oreo) y superior
-                Uri.parse("tel:$ussdCode")
-            } else {
-                // Para versiones anteriores
-                Uri.parse("tel:" + ussdCode.replace("#", Uri.encode("#")))
+            var ussdCode = code.trim()
+            
+            // Asegurarse de que el código tenga el formato correcto
+            if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
+                ussdCode = "*$ussdCode"
             }
+            
+            if (!ussdCode.endsWith("#")) {
+                ussdCode = "$ussdCode#"
+            }
+            
+            // IMPORTANTE: Codificar correctamente el signo #
+            val encodedHash = Uri.encode("#")
+            val codeWithoutHash = ussdCode.substring(0, ussdCode.length - 1)
+            val ussdUri = Uri.parse("tel:$codeWithoutHash$encodedHash")
             
             val intent = Intent(Intent.ACTION_CALL, ussdUri)
             return PendingIntent.getActivity(
@@ -254,8 +276,6 @@ class BonoWidgetProvider : AppWidgetProvider() {
         }
     }
 }
-
-
 
 
 

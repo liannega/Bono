@@ -1,5 +1,6 @@
 import 'package:bono/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomDrawer extends StatelessWidget {
   final bool isDarkMode;
@@ -60,11 +61,12 @@ class CustomDrawer extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 // Texto "TODO"
-                const Text(
+                Text(
                   'BONO',
-                  style: TextStyle(
+                  style: GoogleFonts.montserrat(
                     color: Colors.white,
                     fontSize: 26,
+                    letterSpacing: -0.5, // Letras más juntas
                   ),
                 ),
               ],
@@ -74,9 +76,13 @@ class CustomDrawer extends StatelessWidget {
           // Único elemento de Ajustes
           ListTile(
             leading: const Icon(Icons.settings, color: Colors.white),
-            title: const Text(
+            title: Text(
               'Ajustes',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: GoogleFonts.montserrat(
+                color: Colors.white,
+                fontSize: 16,
+                letterSpacing: -0.3, // Letras más juntas
+              ),
             ),
             onTap: () {
               Navigator.pop(context); // Cierra el drawer

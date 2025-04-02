@@ -62,6 +62,8 @@ class MenuList extends StatelessWidget {
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
+                              letterSpacing: -0.5, // Letras más juntas
+                              height: 1.1, // Menos espacio entre líneas
                             ),
                           ),
                           if (item.subtitle != null)
@@ -70,6 +72,8 @@ class MenuList extends StatelessWidget {
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 color: Colors.grey,
+                                letterSpacing: -0.3, // Letras más juntas
+                                height: 1.1, // Menos espacio entre líneas
                               ),
                             ),
                         ],

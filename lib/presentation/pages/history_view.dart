@@ -1,9 +1,12 @@
 import 'package:bono/services/history_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bono/config/utils/ussd_service.dart';
 import 'package:bono/models/history_model.dart';
+import 'package:bono/presentation/pages/asterisco99_page.dart';
+import 'package:bono/presentation/pages/numero_oculto_page.dart';
 
 class HistoryView extends StatefulWidget {
   final Function(String) onStatusMessage;
@@ -21,6 +24,11 @@ class _HistoryViewState extends State<HistoryView> {
   List<HistoryItem> _historyItems = [];
   bool _isLoading = true;
   bool _isExecutingUssd = false;
+
+  // Cambiar el canal para usar el mismo que ya está funcionando
+  static const platform = MethodChannel('com.example.bono/ussd');
+  // Canal para USSD
+  static const ussdPlatform = MethodChannel('com.example.bono/ussd');
 
   @override
   void initState() {
@@ -41,6 +49,7 @@ class _HistoryViewState extends State<HistoryView> {
     });
   }
 
+  // Modificar el método _executeUssdFromHistory para manejar casos especiales
   Future<void> _executeUssdFromHistory(HistoryItem item) async {
     if (_isExecutingUssd) return;
 
@@ -48,10 +57,76 @@ class _HistoryViewState extends State<HistoryView> {
       _isExecutingUssd = true;
     });
 
-    widget.onStatusMessage("Ejecutando código USSD...");
-
     try {
-      // Asegurarse de que el código tenga el formato correcto
+      // Casos especiales para Asterisco 99, Mi número oculto y Números útiles
+      if (item.title == "Asterisco 99") {
+        // Navegar a la página Asterisco99Page sin pasar número
+        if (mounted) {
+          // Actualizar la fecha del elemento actual para que aparezca primero
+          await _updateHistoryItemTimestamp(item);
+          await _loadHistory();
+
+          Navigator.push(
+            // ignore: use_build_context_synchronously
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Asterisco99Page(),
+            ),
+          );
+        }
+        return;
+      } else if (item.title == "Mi número oculto") {
+        // Navegar a la página NumeroOcultoPage sin pasar número
+        if (mounted) {
+          // Actualizar la fecha del elemento actual para que aparezca primero
+          await _updateHistoryItemTimestamp(item);
+          await _loadHistory();
+
+          Navigator.push(
+            // ignore: use_build_context_synchronously
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NumeroOcultoPage(),
+            ),
+          );
+        }
+        return;
+      } else if (item.title.contains("Atención al cliente") ||
+          item.title.contains("Línea Antidrogas") ||
+          item.title.contains("Ambulancias") ||
+          item.title.contains("Bomberos") ||
+          item.title.contains("Policía") ||
+          item.title.contains("Salvamento Marítimo") ||
+          item.title.contains("Cubacel Info")) {
+        // Realizar llamada directa para números útiles
+        try {
+          // Actualizar la fecha del elemento actual
+          await _updateHistoryItemTimestamp(item);
+          await _loadHistory();
+
+          // Ejecutar la llamada directamente usando el método nativo
+          await platform.invokeMethod('makeDirectCall', {
+            'phoneNumber': item.code.replaceAll("#", ""),
+          });
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Error al realizar la llamada: $e',
+                  style: GoogleFonts.montserrat(
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+        return;
+      }
+
+      // Para otros casos, ejecutar el código USSD normalmente
       var ussdCode = item.code.trim();
       if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
         ussdCode = "*$ussdCode";
@@ -67,30 +142,19 @@ class _HistoryViewState extends State<HistoryView> {
       if (!mounted) return;
 
       if (success) {
-        widget.onStatusMessage("Código USSD ejecutado correctamente");
-
         // No agregamos al historial cuando se ejecuta desde la vista de historial
         // Solo actualizamos la fecha del elemento actual
         await _updateHistoryItemTimestamp(item);
         await _loadHistory();
-      } else {
-        widget.onStatusMessage("Error al ejecutar el código USSD");
       }
     } catch (e) {
       if (mounted) {
-        widget.onStatusMessage("Error: ${e.toString()}");
+        // Manejar error silenciosamente
       }
     } finally {
       if (mounted) {
         setState(() {
           _isExecutingUssd = false;
-        });
-
-        // Limpiar el mensaje después de 3 segundos
-        Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) {
-            widget.onStatusMessage("");
-          }
         });
       }
     }
@@ -116,20 +180,45 @@ class _HistoryViewState extends State<HistoryView> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Limpiar historial'),
-        content: const Text(
-            '¿Estás seguro de que deseas limpiar todo el historial?'),
+        backgroundColor: const Color(0xFF333333),
+        title: Text(
+          'Limpiar historial',
+          style: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
+        ),
+        content: Text(
+          '¿Estás seguro de que deseas limpiar todo el historial?',
+          style: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 14,
+            letterSpacing: -0.3,
+            height: 1.1,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 166, 213, 245),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.montserrat(
+                color: Colors.grey,
+                letterSpacing: -0.3,
+              ),
             ),
-            child: const Text('Limpiar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Limpiar',
+              style: GoogleFonts.montserrat(
+                color: Colors.blue,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.3,
+              ),
+            ),
           ),
         ],
       ),
@@ -139,7 +228,6 @@ class _HistoryViewState extends State<HistoryView> {
       await HistoryService.clearHistory();
       await _loadHistory();
       widget.onStatusMessage("Historial eliminado");
-
       // Limpiar el mensaje después de 2 segundos
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
@@ -149,6 +237,7 @@ class _HistoryViewState extends State<HistoryView> {
     }
   }
 
+  // Modificar el método build para mostrar solo el código y la fecha para transferencias
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -173,6 +262,8 @@ class _HistoryViewState extends State<HistoryView> {
               style: GoogleFonts.montserrat(
                 fontSize: 18,
                 color: Colors.grey,
+                letterSpacing: -0.5,
+                height: 1.1,
               ),
             ),
             const SizedBox(height: 8),
@@ -181,6 +272,8 @@ class _HistoryViewState extends State<HistoryView> {
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 color: Colors.grey,
+                letterSpacing: -0.3,
+                height: 1.1,
               ),
               textAlign: TextAlign.center,
             ),
@@ -192,14 +285,40 @@ class _HistoryViewState extends State<HistoryView> {
     return Column(
       children: [
         // Botón para limpiar historial
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton.icon(
-            onPressed: _clearHistory,
-            icon: const Icon(Icons.delete_sweep),
-            label: const Text('Limpiar historial'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 166, 213, 245),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16.0, top: 8.0, bottom: 8.0),
+            child: InkWell(
+              onTap: _clearHistory,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Limpiar',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        color: Colors.blue,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -212,6 +331,9 @@ class _HistoryViewState extends State<HistoryView> {
               final item = _historyItems[index];
               final formattedDate =
                   DateFormat('dd/MM/yyyy HH:mm').format(item.timestamp);
+
+              // Determinar si es una transferencia de saldo
+              final isTransfer = item.title == "Transferir Saldo";
 
               return Padding(
                 padding:
@@ -251,14 +373,19 @@ class _HistoryViewState extends State<HistoryView> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
+                                    letterSpacing: -0.5,
+                                    height: 1.1,
                                   ),
                                 ),
-                                if (item.subtitle != null)
+                                // Para transferencias, no mostrar subtítulo
+                                if (item.subtitle != null && !isTransfer)
                                   Text(
                                     item.subtitle!,
                                     style: GoogleFonts.montserrat(
                                       fontSize: 12,
                                       color: Colors.grey,
+                                      letterSpacing: -0.3,
+                                      height: 1.1,
                                     ),
                                   ),
                                 Text(
@@ -266,17 +393,21 @@ class _HistoryViewState extends State<HistoryView> {
                                   style: GoogleFonts.montserrat(
                                     fontSize: 12,
                                     color: Colors.grey,
+                                    letterSpacing: -0.3,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           Text(
-                            item.code,
+                            item.title == "Transferir Saldo"
+                                ? "*234"
+                                : item.code,
                             style: GoogleFonts.montserrat(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: item.color,
+                              letterSpacing: -0.3,
                             ),
                           ),
                         ],

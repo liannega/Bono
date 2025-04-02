@@ -5,6 +5,8 @@ import 'package:bono/widgets/shared/menu_lateral.dart';
 import 'package:bono/widgets/shared/items.dart';
 import 'package:bono/widgets/shared/menu_list.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:bono/presentation/pages/asterisco99_page.dart';
 
 const backgroundColor = Color.fromARGB(255, 45, 44, 44);
 
@@ -62,7 +64,61 @@ class _HomePageState extends State<HomePage>
   }
 
   void handleMenuAction(MenuItems item) async {
+    // Caso especial para Asterisco 99
+    if (item.title == "Asterisco 99") {
+      await _handleAsterisco99();
+      return;
+    }
+
     if (item.ussdCode != null && !_isExecutingUssd) {
+      // Mostrar diálogo de confirmación
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF333333),
+            title: Text(
+              'Ejecutar ${item.title}',
+              style: GoogleFonts.montserrat(
+                color: Colors.white,
+                fontSize: 18,
+                letterSpacing: -0.5, // Letras más juntas
+              ),
+            ),
+            content: Text(
+              '¿Deseas ejecutar el código ${item.ussdCode}?',
+              style: GoogleFonts.montserrat(
+                color: Colors.white,
+                fontSize: 14,
+                letterSpacing: -0.3, // Letras más juntas
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancelar',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.grey,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  'Ejecutar',
+                  style: GoogleFonts.montserrat(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              )
+            ]),
+      );
+
+      if (confirm != true) return;
+
       // Evitar múltiples ejecuciones simultáneas
       setState(() {
         _isExecutingUssd = true;
@@ -118,20 +174,34 @@ class _HomePageState extends State<HomePage>
     }
   }
 
+  // Modificar el método _handleAsterisco99 para navegar a la página Asterisco99Page
+  Future<void> _handleAsterisco99() async {
+    // Navegar a la página Asterisco99Page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const Asterisco99Page(),
+      ),
+    );
+  }
+
   // Método para actualizar el mensaje de estado desde la vista de historial
   void updateStatusMessage(String message) {
-    setState(() {
-      _statusMessage = message;
-    });
+    // No hacer nada - mensajes de estado desactivados
 
-    // Limpiar el mensaje después de 3 segundos
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _statusMessage = null;
-        });
-      }
-    });
+    // Eliminamos la actualización del estado
+    // setState(() {
+    //   _statusMessage = message;
+    // });
+
+    // Eliminamos la limpieza del mensaje
+    // Future.delayed(const Duration(seconds: 2), () {
+    //   if (mounted) {
+    //     setState(() {
+    //       _statusMessage = null;
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -139,12 +209,13 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'BONO',
-          style: TextStyle(
+          style: GoogleFonts.montserrat(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.w400,
+            letterSpacing: -0.5, // Letras más juntas
           ),
         ),
         centerTitle: true,
@@ -169,22 +240,25 @@ class _HomePageState extends State<HomePage>
       ),
       body: Column(
         children: [
-          // Mensaje de estado
-          if (_statusMessage != null)
-            Container(
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.all(8),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _statusMessage!,
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-            ),
+          // Eliminamos el mensaje de estado
+          // if (_statusMessage != null)
+          //   Container(
+          //     padding: const EdgeInsets.all(8),
+          //     margin: const EdgeInsets.all(8),
+          //     width: double.infinity,
+          //     decoration: BoxDecoration(
+          //       color: Colors.blue.withOpacity(0.2),
+          //       borderRadius: BorderRadius.circular(8),
+          //     ),
+          //     child: Text(
+          //       _statusMessage!,
+          //       style: GoogleFonts.montserrat(
+          //         color: Colors.white,
+          //         letterSpacing: -0.3, // Letras más juntas
+          //       ),
+          //       textAlign: TextAlign.center,
+          //     ),
+          //   ),
 
           // Iconos de navegación superiores
           Container(

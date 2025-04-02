@@ -1,8 +1,8 @@
-
-import 'package:bono/home_page.dart';
+import 'package:bono/presentation/pages/home_page.dart';
 import 'package:bono/services/widget_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   // Asegurarse de que los widgets estén inicializados
@@ -35,6 +35,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: GoogleFonts.montserratTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
       home: const HomePage(),
     );

@@ -1,8 +1,13 @@
 import 'package:bono/config/utils/ussd_service.dart';
-import 'package:bono/home_page.dart';
-import 'package:bono/services/history_service.dart';
+import 'package:bono/presentation/pages/asterisco99_page.dart';
+import 'package:bono/presentation/pages/home_page.dart';
+import 'package:bono/presentation/pages/numero_oculto_page.dart';
+import 'package:bono/presentation/pages/numeros_utiles_page.dart';
+import 'package:bono/presentation/pages/transferir_saldo_page.dart';
+import 'package:bono/services/dialog_service.dart';
+import 'package:bono/services/ussd_service.dart';
+import 'package:bono/widgets/menu/menu_item.dart';
 import 'package:bono/widgets/shared/items.dart';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,7 +17,7 @@ class SubmenuPage extends StatefulWidget {
   final String? parentHeroTag;
   final IconData? parentIcon;
   final Color? parentColor;
-  final String? parentTitle; // Añadido para rastrear el título del padre
+  final String? parentTitle;
 
   const SubmenuPage({
     super.key,
@@ -35,88 +40,65 @@ class _SubmenuPageState extends State<SubmenuPage> {
   @override
   void initState() {
     super.initState();
-    // Verificar permiso al iniciar
     _checkPermission();
   }
 
+  // Verificar y solicitar permisos necesarios
   Future<void> _checkPermission() async {
     final hasPermission = await UssdService.hasCallPermission();
     if (!hasPermission) {
-      // Solicitar permiso si no lo tiene
       await UssdService.requestCallPermission();
     }
   }
 
+  // Actualizar el estado de ejecución USSD
+  void _setExecuting(bool isExecuting) {
+    setState(() {
+      _isExecutingUssd = isExecuting;
+    });
+  }
+
+  // Actualizar el mensaje de estado
+  void _setStatusMessage(String? message) {
+    // No hacer nada - mensajes de estado desactivados
+  }
+
   // Obtener el icono grande para mostrar en la parte superior según el título
   Widget _getHeaderIcon() {
-    double iconSize = 80.0;
+    double iconSize = 30.0;
     Color iconColor = Colors.white;
+    Color backgroundColor = Colors.blue;
 
-    switch (widget.title) {
-      case "Planes Combinados":
-        return Icon(
-          Icons.sync,
+    // Mapa de títulos a iconos para simplificar la lógica
+    final Map<String, IconData> titleIcons = {
+      "Planes Combinados": Icons.sync,
+      "Planes de Datos": Icons.data_usage,
+      "Planes de Voz": Icons.phone_in_talk,
+      "Planes de SMS": Icons.sms,
+      "Plan amigos": Icons.people,
+      "Gestionar Planes": Icons.shopping_cart,
+      "Tarifa por consumo": Icons.trending_up,
+      "SOLO Líneas USIM con LTE (nuevas)": Icons.data_usage,
+      "Gestionar Llamadas": Icons.call,
+    };
+
+    // Buscar el icono en el mapa o usar el icono padre o uno por defecto
+    IconData iconData =
+        titleIcons[widget.title] ?? widget.parentIcon ?? Icons.folder_open;
+
+    // Crear un CircleAvatar con Hero para la animación
+    return Hero(
+      tag: 'icon_hero_${widget.title}',
+      child: CircleAvatar(
+        radius: 35,
+        backgroundColor: backgroundColor,
+        child: Icon(
+          iconData,
           color: iconColor,
           size: iconSize,
-        );
-      case "Planes de Datos":
-        return Icon(
-          Icons.data_usage,
-          color: iconColor,
-          size: iconSize,
-        );
-      case "Planes de Voz":
-        return Icon(
-          Icons.phone_in_talk,
-          color: iconColor,
-          size: iconSize,
-        );
-      case "Planes de SMS":
-        return Icon(
-          Icons.sms,
-          color: iconColor,
-          size: iconSize,
-        );
-      case "Plan amigos":
-        return Icon(
-          Icons.people,
-          color: iconColor,
-          size: iconSize,
-        );
-      case "Gestionar Planes":
-        return Icon(
-          Icons.shopping_cart,
-          color: iconColor,
-          size: iconSize,
-        );
-      case "Tarifa por consumo":
-        return Icon(
-          Icons.trending_up,
-          color: iconColor,
-          size: iconSize,
-        );
-      case "SOLO Líneas USIM con LTE (nuevas)":
-        return Icon(
-          Icons.data_usage,
-          color: iconColor,
-          size: iconSize,
-        );
-      default:
-        // Si hay un icono padre, mostrar ese
-        if (widget.parentIcon != null) {
-          return Icon(
-            widget.parentIcon!,
-            color: iconColor,
-            size: iconSize,
-          );
-        }
-        // Icono por defecto
-        return Icon(
-          Icons.folder_open,
-          color: iconColor,
-          size: iconSize,
-        );
-    }
+        ),
+      ),
+    );
   }
 
   // Determinar si un elemento debe mostrar una flecha a la derecha
@@ -131,6 +113,205 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
 
     return false;
+  }
+
+  // Método principal para manejar los toques en los elementos
+  void _handleItemTap(
+      BuildContext context, MenuItems item, String heroTag) async {
+    // Manejar casos especiales para Gestionar Llamadas
+    if (widget.title == "Gestionar Llamadas") {
+      _handleCallManagementItem(context, item, heroTag);
+      return;
+    }
+
+    // Manejar elementos con submenú
+    if (item.hasSubmenu && item.submenuItems != null) {
+      _navigateToSubmenu(context, item, heroTag);
+      return;
+    }
+
+    // Manejar elementos con código USSD
+    if (item.ussdCode != null) {
+      await _handleUssdItem(context, item);
+      return;
+    }
+
+    // Manejar otros casos específicos
+    switch (item.title) {
+      case "Recargar":
+        _showRechargeDialog(context);
+        break;
+      case "Transferir saldo":
+        _showTransferDialog(context);
+        break;
+      case "Llamada normal":
+        _showDialerDialog(context);
+        break;
+    }
+  }
+
+  // Manejar elementos específicos del menú Gestionar Llamadas
+  void _handleCallManagementItem(
+      BuildContext context, MenuItems item, String heroTag) {
+    switch (item.title) {
+      case "Asterisco 99":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const Asterisco99Page(),
+          ),
+        );
+        break;
+      case "Mi número oculto":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NumeroOcultoPage(),
+          ),
+        );
+        break;
+      case "Números útiles":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NumerosUtilesPage(),
+          ),
+        );
+        break;
+    }
+  }
+
+  // Navegar a un submenú
+  void _navigateToSubmenu(
+      BuildContext context, MenuItems item, String heroTag) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SubmenuPage(
+          title: item.title,
+          items: item.submenuItems!,
+          parentHeroTag: heroTag,
+          parentIcon: item.icon,
+          parentColor: item.color,
+          parentTitle: widget.title,
+        ),
+      ),
+    );
+  }
+
+  // Manejar elementos con código USSD
+  Future<void> _handleUssdItem(BuildContext context, MenuItems item) async {
+    // Determinar si se debe ejecutar directamente o mostrar confirmación
+    bool executeDirectly = widget.title.startsWith("Plan") ||
+        widget.title == "Gestionar Planes" ||
+        widget.title == "Tarifa por consumo" ||
+        widget.title == "SOLO Líneas USIM con LTE (nuevas)" ||
+        (widget.title == "Gestionar Saldo" && item.title == "Consultar Saldo");
+
+    if (executeDirectly) {
+      await UssdExecutorService.executeUssdCodeDirectly(
+        code: item.ussdCode!,
+        item: item,
+        setExecuting: _setExecuting,
+        setStatusMessage: _setStatusMessage,
+      );
+    } else {
+      await _executeUssdWithConfirmation(item);
+    }
+  }
+
+  // Ejecutar código USSD con confirmación previa
+  Future<void> _executeUssdWithConfirmation(MenuItems item) async {
+    if (_isExecutingUssd) return;
+
+    final confirm = await DialogService.showConfirmationDialog(
+      context: context,
+      title: 'Ejecutar ${item.title}',
+      content: '¿Deseas ejecutar el código ${item.ussdCode}?',
+      confirmText: 'Ejecutar',
+    );
+
+    if (confirm == true) {
+      await UssdExecutorService.executeUssdCodeDirectly(
+        code: item.ussdCode!,
+        item: item,
+        setExecuting: _setExecuting,
+        setStatusMessage: _setStatusMessage,
+      );
+    }
+  }
+
+  // Diálogo para recargar
+  void _showRechargeDialog(BuildContext context) async {
+    final code = await DialogService.showInputDialog(
+      context: context,
+      title: 'Recargar Saldo',
+      labelText: 'Código de recarga',
+      hintText: 'Ingresa el código de recarga',
+      confirmText: 'Recargar',
+      keyboardType: TextInputType.number,
+    );
+
+    if (code != null && code.isNotEmpty && mounted) {
+      // Crear un elemento de menú temporal para el historial
+      final rechargeItem = MenuItems(
+        title: "Recargar Saldo",
+        subtitle: "Código: $code",
+        icon: Icons.add_card,
+        color: Colors.green,
+        ussdCode: "*662*$code",
+      );
+
+      // Ejecutar el código de recarga
+      await UssdExecutorService.executeUssdCodeDirectly(
+        code: "*662*$code",
+        item: rechargeItem,
+        setExecuting: _setExecuting,
+        setStatusMessage: _setStatusMessage,
+      );
+    }
+  }
+
+  // Diálogo para transferir saldo
+  void _showTransferDialog(BuildContext context) {
+    // Navegar a la página de transferencia de saldo
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TransferirSaldoPage(),
+      ),
+    );
+  }
+
+  // Diálogo para llamada normal
+  void _showDialerDialog(BuildContext context) async {
+    final phone = await DialogService.showInputDialog(
+      context: context,
+      title: 'Realizar Llamada',
+      labelText: 'Número de teléfono',
+      hintText: 'Ingresa el número de teléfono',
+      confirmText: 'Llamar',
+      keyboardType: TextInputType.phone,
+    );
+
+    if (phone != null && phone.isNotEmpty && mounted) {
+      // Crear un elemento de menú temporal para el historial
+      final callItem = MenuItems(
+        title: "Llamada",
+        subtitle: "Número: $phone",
+        icon: Icons.call,
+        color: Colors.green,
+        ussdCode: phone,
+      );
+
+      // Ejecutar la llamada
+      await UssdExecutorService.executeUssdCodeDirectly(
+        code: phone,
+        item: callItem,
+        setExecuting: _setExecuting,
+        setStatusMessage: _setStatusMessage,
+      );
+    }
   }
 
   @override
@@ -151,6 +332,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w500,
+            letterSpacing: -0.5,
           ),
         ),
         leading: IconButton(
@@ -160,47 +342,26 @@ class _SubmenuPageState extends State<SubmenuPage> {
       ),
       body: Column(
         children: [
-          // Mensaje de estado
-          if (_statusMessage != null)
-            Container(
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.all(8),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _statusMessage!,
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-          // Icono del elemento padre con animación Hero
-          if (widget.parentHeroTag != null && !isPlanSubmenu)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Hero(
-                tag: widget.parentHeroTag!,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: widget.parentColor ?? Colors.blue,
-                  child: Icon(
-                    widget.parentIcon ?? Icons.folder_open,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                ),
-              ),
-            ),
-
-          // Icono grande para los submenús de planes
-          if (isPlanSubmenu)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: _getHeaderIcon(),
-            ),
+          // Mostrar solo un icono, ya sea el del padre o el generado por _getHeaderIcon
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: widget.parentHeroTag != null && !isPlanSubmenu
+                ? Hero(
+                    tag: widget.parentHeroTag!,
+                    child: CircleAvatar(
+                      radius: 35,
+                      backgroundColor: widget.parentColor ?? Colors.blue,
+                      child: Icon(
+                        widget.parentIcon ?? Icons.folder_open,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  )
+                : (isPlanSubmenu || widget.title == "Gestionar Llamadas")
+                    ? _getHeaderIcon()
+                    : const SizedBox.shrink(),
+          ),
 
           // Lista de elementos
           Expanded(
@@ -210,369 +371,17 @@ class _SubmenuPageState extends State<SubmenuPage> {
                 final item = widget.items[index];
 
                 // Crear un tag único para cada elemento del submenú
-                // Incluir el título del padre para asegurar unicidad
                 final heroTag = 'submenu_icon_${widget.title}_${item.title}'
                     .replaceAll(" ", "_");
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Card(
-                    color: Colors.transparent,
-                    elevation: 0,
-                    margin: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: InkWell(
-                      onTap: () => _handleItemTap(context, item, heroTag),
-                      borderRadius: BorderRadius.circular(12),
-                      splashColor: item.color.withOpacity(0.3),
-                      highlightColor: item.color.withOpacity(0.1),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6.0, horizontal: 8.0),
-                        child: Row(
-                          children: [
-                            // Envolver el CircleAvatar en un Hero para la animación
-                            Hero(
-                              tag: heroTag,
-                              child: CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Colors
-                                    .blue, // Todos los círculos son azules en los submenús de planes
-                                child: Icon(
-                                  item.icon,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.title,
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  if (item.subtitle != null)
-                                    Text(
-                                      item.subtitle!,
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 14,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            // Flecha a la derecha para elementos con submenú o navegación adicional
-                            if (_shouldShowChevron(item))
-                              const Icon(
-                                Icons.chevron_right,
-                                color: Colors.blue,
-                                size: 30,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                return MenuItemCard(
+                  item: item,
+                  heroTag: heroTag,
+                  showChevron: _shouldShowChevron(item),
+                  onTap: () => _handleItemTap(context, item, heroTag),
                 );
               },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Método principal para manejar los toques en los elementos
-  void _handleItemTap(
-      BuildContext context, MenuItems item, String heroTag) async {
-    if (item.hasSubmenu && item.submenuItems != null) {
-      // Navegar al submenú con el heroTag y el icono del elemento
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SubmenuPage(
-            title: item.title,
-            items: item.submenuItems!,
-            parentHeroTag: heroTag,
-            parentIcon: item.icon,
-            parentColor: item.color,
-            parentTitle:
-                widget.title, // Pasar el título actual como título del padre
-          ),
-        ),
-      );
-    } else if (item.ussdCode != null) {
-      // Ejecutar el código USSD directamente sin confirmación para todos los submenús de planes
-      if (widget.title.startsWith("Plan") ||
-          widget.title == "Gestionar Planes" ||
-          widget.title == "Tarifa por consumo" ||
-          widget.title == "SOLO Líneas USIM con LTE (nuevas)" ||
-          (widget.title == "Gestionar Saldo" &&
-              item.title == "Consultar Saldo")) {
-        await _executeUssdCodeDirectly(item.ussdCode!, item.title, item);
-      } else {
-        // Para otros submenús, mostrar confirmación
-        await _executeUssdCode(item.ussdCode!, item.title, item);
-      }
-    } else if (item.title == "Recargar") {
-      _showRechargeDialog(context);
-    } else if (item.title == "Transferir saldo") {
-      _showTransferDialog(context);
-    } else if (item.title == "Llamada normal") {
-      _showDialerDialog(context);
-    }
-  }
-
-  // Método para ejecutar códigos USSD directamente sin confirmación
-  Future<void> _executeUssdCodeDirectly(
-      String code, String title, MenuItems item) async {
-    if (_isExecutingUssd) return; // Evitar múltiples ejecuciones simultáneas
-
-    // Evitar múltiples ejecuciones simultáneas
-    setState(() {
-      _isExecutingUssd = true;
-      _statusMessage = "Ejecutando código USSD...";
-    });
-
-    try {
-      // Asegurarse de que el código tenga el formato correcto
-      var ussdCode = code.trim();
-      if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
-        ussdCode = "*$ussdCode";
-      }
-
-      if (!ussdCode.endsWith("#")) {
-        ussdCode = "$ussdCode#";
-      }
-
-      // Ejecutar el código USSD usando el servicio nativo
-      final success = await UssdService.executeUssd(ussdCode);
-
-      if (!mounted) return; // Verificar si el widget está montado
-
-      setState(() {
-        if (success) {
-          _statusMessage = "Código USSD ejecutado correctamente";
-          // Agregar al historial si se ejecutó correctamente
-          HistoryService.addToHistory(item, ussdCode);
-        } else {
-          _statusMessage = "Error al ejecutar el código USSD";
-        }
-      });
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _statusMessage = "Error: ${e.toString()}";
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isExecutingUssd = false;
-        });
-
-        // Limpiar el mensaje después de 3 segundos
-        Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) {
-            setState(() {
-              _statusMessage = null;
-            });
-          }
-        });
-      }
-    }
-  }
-
-  // Método centralizado para ejecutar códigos USSD con confirmación
-  Future<void> _executeUssdCode(
-      String code, String title, MenuItems item) async {
-    if (_isExecutingUssd) return; // Evitar múltiples ejecuciones simultáneas
-
-    // Mostrar diálogo de confirmación
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Ejecutar $title'),
-        content: Text('¿Deseas ejecutar el código $code?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ejecutar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    // Ejecutar el código USSD directamente
-    await _executeUssdCodeDirectly(code, title, item);
-  }
-
-  // Diálogo para recargar
-  void _showRechargeDialog(BuildContext context) {
-    final TextEditingController codeController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Recargar Saldo'),
-        content: TextField(
-          controller: codeController,
-          decoration: const InputDecoration(
-            labelText: 'Código de recarga',
-            hintText: 'Ingresa el código de recarga',
-          ),
-          keyboardType: TextInputType.number,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final code = codeController.text.trim();
-              if (code.isNotEmpty) {
-                Navigator.pop(context);
-
-                // Crear un elemento de menú temporal para el historial
-                final rechargeItem = MenuItems(
-                  title: "Recargar Saldo",
-                  subtitle: "Código: $code",
-                  icon: Icons.add_card,
-                  color: Colors.green,
-                  ussdCode: "*662*$code",
-                );
-
-                // Ejecutar el código de recarga
-                await _executeUssdCodeDirectly(
-                    "*662*$code", "Recargar Saldo", rechargeItem);
-              }
-            },
-            child: const Text('Recargar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Diálogo para transferir saldo
-  void _showTransferDialog(BuildContext context) {
-    final TextEditingController phoneController = TextEditingController();
-    final TextEditingController amountController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Transferir Saldo'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Número de teléfono',
-                hintText: 'Ingresa el número de teléfono',
-              ),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: amountController,
-              decoration: const InputDecoration(
-                labelText: 'Monto a transferir',
-                hintText: 'Ingresa el monto',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final phone = phoneController.text.trim();
-              final amount = amountController.text.trim();
-              if (phone.isNotEmpty && amount.isNotEmpty) {
-                Navigator.pop(context);
-
-                // Crear un elemento de menú temporal para el historial
-                final transferItem = MenuItems(
-                  title: "Transferir Saldo",
-                  subtitle: "A: $phone, Monto: $amount",
-                  icon: Icons.send_to_mobile,
-                  color: Colors.orange,
-                  ussdCode: "*234*1*$phone*$amount",
-                );
-
-                // Ejecutar el código de transferencia
-                await _executeUssdCodeDirectly(
-                    "*234*1*$phone*$amount", "Transferir Saldo", transferItem);
-              }
-            },
-            child: const Text('Transferir'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Diálogo para llamada normal
-  void _showDialerDialog(BuildContext context) {
-    final TextEditingController phoneController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Realizar Llamada'),
-        content: TextField(
-          controller: phoneController,
-          decoration: const InputDecoration(
-            labelText: 'Número de teléfono',
-            hintText: 'Ingresa el número de teléfono',
-          ),
-          keyboardType: TextInputType.phone,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final phone = phoneController.text.trim();
-              if (phone.isNotEmpty) {
-                Navigator.pop(context);
-
-                // Crear un elemento de menú temporal para el historial
-                final callItem = MenuItems(
-                  title: "Llamada",
-                  subtitle: "Número: $phone",
-                  icon: Icons.call,
-                  color: Colors.green,
-                  ussdCode: phone,
-                );
-
-                // Ejecutar la llamada
-                await _executeUssdCodeDirectly(phone, "Llamada", callItem);
-              }
-            },
-            child: const Text('Llamar'),
           ),
         ],
       ),
