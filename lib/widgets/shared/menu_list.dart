@@ -1,7 +1,7 @@
+import 'package:bono/widgets/common/item_general.dart';
 import 'package:bono/widgets/shared/items.dart';
 import 'package:bono/widgets/shared/submenu.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class MenuList extends StatelessWidget {
   final List<MenuItems> items;
@@ -19,94 +19,37 @@ class MenuList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        // Crear un tag único para cada elemento
+        // Crear un tag único y consistente para cada elemento
         final heroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Card(
-            color: Colors.transparent,
-            elevation: 0,
-            margin: EdgeInsets.zero,
-            child: InkWell(
-              onTap: () => _handleItemTap(context, item, heroTag),
-              borderRadius: BorderRadius.circular(12),
-              splashColor: item.color.withOpacity(0.3),
-              highlightColor: item.color.withOpacity(0.1),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-                child: Row(
-                  children: [
-                    // Envolver el CircleAvatar en un Hero para la animación
-                    Hero(
-                      tag: heroTag,
-                      child: CircleAvatar(
-                        radius: 30,
-                        backgroundColor: item.color,
-                        child: Icon(
-                          item.icon,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                              letterSpacing: -0.5, // Letras más juntas
-                              height: 1.1, // Menos espacio entre líneas
-                            ),
-                          ),
-                          if (item.subtitle != null)
-                            Text(
-                              item.subtitle!,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 14,
-                                color: Colors.grey,
-                                letterSpacing: -0.3, // Letras más juntas
-                                height: 1.1, // Menos espacio entre líneas
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (item.hasSubmenu)
-                      const Icon(
-                        Icons.chevron_right,
-                        color: Colors.blue,
-                        size: 30,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        return ItemGeneral(
+          icon: item.icon,
+          title: item.title,
+          subtitle: item.subtitle,
+          color: item.color,
+          showChevron: item.hasSubmenu,
+          heroTag: heroTag,
+          onTap: () => _handleItemTap(context, item, heroTag),
         );
       },
     );
   }
 
+  // Modificar el método _handleItemTap para asegurar que los tags de Hero sean consistentes
   void _handleItemTap(BuildContext context, MenuItems item, String heroTag) {
     if (item.hasSubmenu && item.submenuItems != null) {
-      // Navegar al submenú con el heroTag y el icono del elemento padre
+      // Crear un tag consistente para el Hero basado en el título del elemento
+      final consistentHeroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => SubmenuPage(
             title: item.title,
             items: item.submenuItems!,
-            parentHeroTag: heroTag,
-            parentIcon: item.icon, // Pasar el icono del elemento padre
-            parentColor: item.color, // Pasar el color del elemento padre
+            parentHeroTag: consistentHeroTag,
+            parentIcon: item.icon,
+            parentColor: item.color,
           ),
         ),
       );

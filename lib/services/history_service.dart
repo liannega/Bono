@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:bono/models/history_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bono/widgets/shared/items.dart';
+import 'package:flutter/material.dart';
 
 class HistoryService {
   static const String _historyKey = 'ussd_history';
@@ -100,6 +101,28 @@ class HistoryService {
       }
     }
 
+    // Determinar el color correcto para el historial
+    Color itemColor = item.color;
+
+    // Si es un elemento relacionado con llamadas, usar verde en el historial
+    if (item.title == "Asterisco 99" ||
+        item.title == "Mi número oculto" ||
+        item.title == "Gestionar Llamadas" ||
+        item.title.contains("Atención al cliente") ||
+        item.title.contains("Línea Antidrogas") ||
+        item.title.contains("Ambulancias") ||
+        item.title.contains("Bomberos") ||
+        item.title.contains("Policía") ||
+        item.title.contains("Salvamento Marítimo") ||
+        item.title.contains("Cubacel Info")) {
+      itemColor = Colors.green;
+    }
+
+    // Si es una transferencia de saldo, usar naranja
+    if (item.title == "Transferir Saldo") {
+      itemColor = Colors.orange;
+    }
+
     // Crear un nuevo elemento con la fecha actual
     final historyItem = HistoryItem(
       title: item.title,
@@ -107,7 +130,7 @@ class HistoryService {
       code: code,
       timestamp: DateTime.now(),
       icon: item.icon,
-      color: item.color,
+      color: itemColor, // Usar el color determinado
     );
 
     // Agregar al inicio de la lista (más reciente primero)

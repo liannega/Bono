@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bono/services/history_service.dart';
 import 'package:bono/widgets/shared/items.dart';
+import 'package:bono/widgets/common/item_general.dart';
 
 class NumerosUtilesPage extends StatefulWidget {
   const NumerosUtilesPage({super.key});
@@ -13,9 +14,6 @@ class NumerosUtilesPage extends StatefulWidget {
 
 class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
   bool _isExecutingCall = false;
-
-  // Canal para realizar llamadas directas
-  static const platform = MethodChannel('com.example.bono/calls');
 
   // Lista de números útiles
   final List<MenuItems> _numerosUtiles = const [
@@ -76,7 +74,8 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
       String phoneNumber = item.ussdCode!;
 
       // Ejecutar la llamada directamente usando el método nativo
-      await platform.invokeMethod('makeDirectCall', {
+      await const MethodChannel('com.example.bono/ussd')
+          .invokeMethod('makeDirectCall', {
         'phoneNumber': phoneNumber,
       });
 
@@ -133,7 +132,7 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
           // Añadimos el Hero para el icono grande con tamaño ajustado
           const SizedBox(height: 20),
           const Hero(
-            tag: 'call_icon_hero',
+            tag: 'menu_icon_Números_útiles',
             child: CircleAvatar(
               radius: 35,
               backgroundColor: Colors.blue,
@@ -152,50 +151,11 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
               itemCount: _numerosUtiles.length,
               itemBuilder: (context, index) {
                 final item = _numerosUtiles[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 4.0),
-                  child: Card(
-                    color: Colors.transparent,
-                    elevation: 0,
-                    margin: EdgeInsets.zero,
-                    child: InkWell(
-                      onTap: () => _makeDirectCall(item),
-                      borderRadius: BorderRadius.circular(12),
-                      splashColor: item.color.withOpacity(0.3),
-                      highlightColor: item.color.withOpacity(0.1),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6.0, horizontal: 8.0),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundColor: item.color,
-                              child: Icon(
-                                item.icon,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                item.title,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                  letterSpacing: -0.5,
-                                  height: 1.1,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                return ItemGeneral(
+                  icon: item.icon,
+                  title: item.title,
+                  color: Colors.blue,
+                  onTap: () => _makeDirectCall(item),
                 );
               },
             ),

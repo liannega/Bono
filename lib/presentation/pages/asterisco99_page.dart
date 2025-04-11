@@ -176,6 +176,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
       }
     } catch (e) {
       // Mostrar un mensaje de error pero no un diálogo
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -219,7 +220,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
             // Añadimos el Hero para el icono grande con tamaño ajustado
             const SizedBox(height: 40),
             const Hero(
-              tag: 'call_icon_hero',
+              tag: 'menu_icon_Asterisco_99',
               child: CircleAvatar(
                 radius: 35,
                 backgroundColor: Colors.blue,

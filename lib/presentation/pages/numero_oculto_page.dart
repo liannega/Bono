@@ -219,7 +219,7 @@ class _NumeroOcultoPageState extends State<NumeroOcultoPage> {
             // Añadimos el Hero para el icono grande con tamaño ajustado
             const SizedBox(height: 40),
             const Hero(
-              tag: 'call_icon_hero',
+              tag: 'menu_icon_Mi_número_oculto',
               child: CircleAvatar(
                 radius: 35,
                 backgroundColor: Colors.blue,

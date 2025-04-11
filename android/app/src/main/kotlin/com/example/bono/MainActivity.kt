@@ -29,7 +29,6 @@ class MainActivity: FlutterActivity() {
 private val USSD_CHANNEL = "com.example.bono/ussd"
 private val WIDGET_CHANNEL = "com.example.bono/widget"
 private val CONTACTS_CHANNEL = "com.example.bono/contacts"
-private val CALLS_CHANNEL = "com.example.bono/calls"
 private val PERMISSION_REQUEST_CALL_PHONE = 1
 private val PERMISSION_REQUEST_READ_CONTACTS = 2
 private val PICK_CONTACT_REQUEST = 100
@@ -124,32 +123,6 @@ override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
                   result.error("USSD_ERROR", e.message, null)
               }
           }
-          "hasCallPermission" -> {
-              val hasPermission = ContextCompat.checkSelfPermission(
-                  this,
-                  Manifest.permission.CALL_PHONE
-              ) == PackageManager.PERMISSION_GRANTED
-              Log.d("BonoApp", "Call permission check: $hasPermission")
-              result.success(hasPermission)
-          }
-          "requestCallPermission" -> {
-              Log.d("BonoApp", "Requesting call permission from Flutter")
-              ActivityCompat.requestPermissions(
-                  this,
-                  arrayOf(Manifest.permission.CALL_PHONE),
-                  PERMISSION_REQUEST_CALL_PHONE
-              )
-              result.success(true)
-          }
-          else -> {
-              result.notImplemented()
-          }
-      }
-  }
-  
-  // Canal para llamadas directas
-  MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CALLS_CHANNEL).setMethodCallHandler { call, result ->
-      when (call.method) {
           "makeDirectCall" -> {
               val phoneNumber = call.argument<String>("phoneNumber") ?: ""
               Log.d("BonoApp", "Making direct call to: $phoneNumber")
@@ -172,6 +145,23 @@ override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
                   Log.e("BonoApp", "Error making direct call: ${e.message}", e)
                   result.error("CALL_ERROR", e.message, null)
               }
+          }
+          "hasCallPermission" -> {
+              val hasPermission = ContextCompat.checkSelfPermission(
+                  this,
+                  Manifest.permission.CALL_PHONE
+              ) == PackageManager.PERMISSION_GRANTED
+              Log.d("BonoApp", "Call permission check: $hasPermission")
+              result.success(hasPermission)
+          }
+          "requestCallPermission" -> {
+              Log.d("BonoApp", "Requesting call permission from Flutter")
+              ActivityCompat.requestPermissions(
+                  this,
+                  arrayOf(Manifest.permission.CALL_PHONE),
+                  PERMISSION_REQUEST_CALL_PHONE
+              )
+              result.success(true)
           }
           else -> {
               result.notImplemented()
@@ -516,6 +506,7 @@ override fun onRequestPermissionsResult(
   }
 }
 }
+
 
 
 

@@ -33,22 +33,22 @@
             android:textSize="16sp"
             android:layout_marginStart="12dp" />
 
-        <!-- Botones de WiFi y Datos -->
+        <!-- Botones de Datos y WiFi (ambos circulares) -->
         <ImageView
             android:id="@+id/btn_data"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/square_button_background"
-            android:padding="8dp"
-            android:src="@drawable/ic_data_simple"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/round_button_background"
+            android:padding="10dp"
+            android:src="@drawable/ic_data_simple_arrows"
             android:layout_marginEnd="8dp" />
 
         <ImageView
             android:id="@+id/btn_wifi"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/square_button_background"
-            android:padding="8dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/round_button_background"
+            android:padding="10dp"
             android:src="@drawable/ic_wifi" />
     </LinearLayout>
 
@@ -156,7 +156,6 @@
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
-
 
 
 

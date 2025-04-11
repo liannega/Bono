@@ -21,41 +21,46 @@ class BonoWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         Log.d("BonoWidget", "onUpdate called for widget with ${appWidgetIds.size} widgets")
-        
+
         // Actualizar cada widget
         appWidgetIds.forEach { widgetId ->
             try {
                 Log.d("BonoWidget", "Updating widget $widgetId")
-                
+
                 // Crear RemoteViews con el layout mejorado
                 val views = RemoteViews(context.packageName, R.layout.bono_widget)
-                
+
+                Log.d("BonoWidget", "Configurando iconos del widget con ic_data_simple_arrows para datos móviles")
+
+                // Asegurarse de que se use el icono correcto para datos móviles
+                views.setImageViewResource(R.id.btn_data, R.drawable.ic_data_simple_arrows)
+
                 // Verificar permisos antes de configurar los botones USSD
                 val hasCallPermission = ContextCompat.checkSelfPermission(
                     context, 
                     Manifest.permission.CALL_PHONE
                 ) == PackageManager.PERMISSION_GRANTED
-                
+
                 Log.d("BonoWidget", "Call permission granted: $hasCallPermission")
-                
+
                 // Configurar los botones
                 if (hasCallPermission) {
                     // Saldo
                     val balanceIntent = createUssdIntent(context, "*222#")
                     views.setOnClickPendingIntent(R.id.btn_balance, balanceIntent)
-                    
+
                     // Bono
                     val bonusIntent = createUssdIntent(context, "*222*266#")
                     views.setOnClickPendingIntent(R.id.btn_bonus, bonusIntent)
-                    
+
                     // Datos
                     val dataIntent = createUssdIntent(context, "*222*328#")
                     views.setOnClickPendingIntent(R.id.btn_data_usage, dataIntent)
-                    
+
                     // Minutos
                     val minutesIntent = createUssdIntent(context, "*222*869#")
                     views.setOnClickPendingIntent(R.id.btn_minutes, minutesIntent)
-                    
+
                     // SMS
                     val smsIntent = createUssdIntent(context, "*222*767#")
                     views.setOnClickPendingIntent(R.id.btn_sms, smsIntent)
@@ -70,14 +75,14 @@ class BonoWidgetProvider : AppWidgetProvider() {
                         requestPermIntent, 
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
-                    
+
                     views.setOnClickPendingIntent(R.id.btn_balance, pendingRequestIntent)
                     views.setOnClickPendingIntent(R.id.btn_bonus, pendingRequestIntent)
                     views.setOnClickPendingIntent(R.id.btn_data_usage, pendingRequestIntent)
                     views.setOnClickPendingIntent(R.id.btn_minutes, pendingRequestIntent)
                     views.setOnClickPendingIntent(R.id.btn_sms, pendingRequestIntent)
                 }
-                
+
                 // WiFi
                 val wifiIntent = Intent(context, MainActivity::class.java)
                 wifiIntent.action = "TOGGLE_WIFI"
@@ -88,7 +93,7 @@ class BonoWidgetProvider : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(R.id.btn_wifi, pendingWifiIntent)
-                
+
                 // Datos móviles
                 val mobileDataIntent = Intent(context, MainActivity::class.java)
                 mobileDataIntent.action = "TOGGLE_DATA"
@@ -99,7 +104,7 @@ class BonoWidgetProvider : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(R.id.btn_data, pendingMobileDataIntent)
-                
+
                 // Logo abre la app
                 val openAppIntent = Intent(context, MainActivity::class.java)
                 val pendingOpenAppIntent = PendingIntent.getActivity(
@@ -109,18 +114,18 @@ class BonoWidgetProvider : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(R.id.logo, pendingOpenAppIntent)
-                
+
                 // Actualizar el widget
                 appWidgetManager.updateAppWidget(widgetId, views)
                 Log.d("BonoWidget", "Widget $widgetId updated successfully")
             } catch (e: Exception) {
                 Log.e("BonoWidget", "Error updating widget $widgetId: ${e.message}")
                 e.printStackTrace()
-                
+
                 // Mostrar un widget de error en caso de fallo
                 try {
                     val errorViews = RemoteViews(context.packageName, R.layout.bono_widget_error)
-                    
+
                     // Configurar un intent para abrir la app
                     val intent = Intent(context, MainActivity::class.java)
                     val pendingIntent = PendingIntent.getActivity(
@@ -129,10 +134,10 @@ class BonoWidgetProvider : AppWidgetProvider() {
                         intent, 
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
-                    
+
                     // Configurar el widget para abrir la app al tocarlo
                     errorViews.setOnClickPendingIntent(R.id.error_container, pendingIntent)
-                    
+
                     // Actualizar el widget
                     appWidgetManager.updateAppWidget(widgetId, errorViews)
                     Log.d("BonoWidget", "Error widget displayed for widget $widgetId")
@@ -143,28 +148,28 @@ class BonoWidgetProvider : AppWidgetProvider() {
             }
         }
     }
-    
+
     private fun createUssdIntent(context: Context, code: String): PendingIntent {
         try {
             Log.d("BonoWidget", "Creating USSD intent for code: $code")
-            
+
             // Formatear el código USSD correctamente
             var ussdCode = code.trim()
-            
+
             // Asegurarse de que el código tenga el formato correcto
             if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
                 ussdCode = "*$ussdCode"
             }
-            
+
             if (!ussdCode.endsWith("#")) {
                 ussdCode = "$ussdCode#"
             }
-            
+
             // IMPORTANTE: Codificar correctamente el signo #
             val encodedHash = Uri.encode("#")
             val codeWithoutHash = ussdCode.substring(0, ussdCode.length - 1)
             val ussdUri = Uri.parse("tel:$codeWithoutHash$encodedHash")
-            
+
             val intent = Intent(Intent.ACTION_CALL, ussdUri)
             return PendingIntent.getActivity(
                 context, 
@@ -175,7 +180,7 @@ class BonoWidgetProvider : AppWidgetProvider() {
         } catch (e: Exception) {
             Log.e("BonoWidget", "Error creating USSD intent: ${e.message}")
             e.printStackTrace()
-            
+
             // Fallback a un intent para abrir la app
             val fallbackIntent = Intent(context, MainActivity::class.java)
             fallbackIntent.action = "USSD_ERROR"
@@ -276,6 +281,3 @@ class BonoWidgetProvider : AppWidgetProvider() {
         }
     }
 }
-
-
-

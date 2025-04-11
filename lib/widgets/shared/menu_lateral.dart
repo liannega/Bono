@@ -1,5 +1,5 @@
-import 'package:bono/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -48,25 +48,24 @@ class CustomDrawer extends StatelessWidget {
                   width: 100,
                   height: 100,
                   decoration: const BoxDecoration(
-                    color: Colors.blue,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.account_balance,
-                      color: Colors.white,
-                      size: 50,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/img/logo4.png',
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Texto "TODO"
+                const SizedBox(height: 20),
+                // Texto "BONO"
                 Text(
                   'BONO',
                   style: GoogleFonts.montserrat(
                     color: Colors.white,
-                    fontSize: 26,
-                    letterSpacing: -0.5, // Letras más juntas
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.5,
                   ),
                 ),
               ],
@@ -86,12 +85,7 @@ class CustomDrawer extends StatelessWidget {
             ),
             onTap: () {
               Navigator.pop(context); // Cierra el drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsPage(),
-                ),
-              );
+              context.go('/settings'); // Usar GoRouter para navegar
             },
           ),
         ],

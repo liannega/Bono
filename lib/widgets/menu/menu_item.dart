@@ -5,7 +5,7 @@ import 'package:bono/widgets/shared/items.dart';
 /// Widget para mostrar un elemento de menú en forma de tarjeta
 class MenuItemCard extends StatelessWidget {
   final MenuItems item;
-  final String heroTag;
+  final String? heroTag;
   final VoidCallback onTap;
   final bool showChevron;
 
@@ -35,18 +35,28 @@ class MenuItemCard extends StatelessWidget {
             child: Row(
               children: [
                 // Envolver el CircleAvatar en un Hero para la animación
-                Hero(
-                  tag: heroTag,
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.blue,
-                    child: Icon(
-                      item.icon,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                ),
+                heroTag != null
+                    ? Hero(
+                        tag: heroTag!,
+                        child: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.blue,
+                          child: Icon(
+                            item.icon,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      )
+                    : CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.blue,
+                        child: Icon(
+                          item.icon,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

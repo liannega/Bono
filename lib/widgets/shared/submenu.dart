@@ -1,14 +1,10 @@
 import 'package:bono/config/utils/ussd_service.dart';
-import 'package:bono/presentation/pages/asterisco99_page.dart';
-import 'package:bono/presentation/pages/home_page.dart';
-import 'package:bono/presentation/pages/numero_oculto_page.dart';
-import 'package:bono/presentation/pages/numeros_utiles_page.dart';
-import 'package:bono/presentation/pages/transferir_saldo_page.dart';
 import 'package:bono/services/dialog_service.dart';
 import 'package:bono/services/ussd_service.dart';
-import 'package:bono/widgets/menu/menu_item.dart';
+import 'package:bono/widgets/common/item_general.dart';
 import 'package:bono/widgets/shared/items.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SubmenuPage extends StatefulWidget {
@@ -86,9 +82,13 @@ class _SubmenuPageState extends State<SubmenuPage> {
     IconData iconData =
         titleIcons[widget.title] ?? widget.parentIcon ?? Icons.folder_open;
 
+    // Crear un tag consistente para el Hero
+    // Usar el título del elemento actual para que sea único pero consistente
+    final heroTag = 'menu_icon_${widget.title.replaceAll(" ", "_")}';
+
     // Crear un CircleAvatar con Hero para la animación
     return Hero(
-      tag: 'icon_hero_${widget.title}',
+      tag: heroTag,
       child: CircleAvatar(
         radius: 35,
         backgroundColor: backgroundColor,
@@ -126,7 +126,22 @@ class _SubmenuPageState extends State<SubmenuPage> {
 
     // Manejar elementos con submenú
     if (item.hasSubmenu && item.submenuItems != null) {
-      _navigateToSubmenu(context, item, heroTag);
+      // Crear un tag consistente para el Hero basado en el título del elemento
+      final consistentHeroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubmenuPage(
+            title: item.title,
+            items: item.submenuItems!,
+            parentHeroTag: consistentHeroTag,
+            parentIcon: item.icon,
+            parentColor: item.color,
+            parentTitle: widget.title,
+          ),
+        ),
+      );
       return;
     }
 
@@ -153,30 +168,19 @@ class _SubmenuPageState extends State<SubmenuPage> {
   // Manejar elementos específicos del menú Gestionar Llamadas
   void _handleCallManagementItem(
       BuildContext context, MenuItems item, String heroTag) {
+    // Usar tags consistentes para la animación Hero
     switch (item.title) {
       case "Asterisco 99":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const Asterisco99Page(),
-          ),
-        );
+        // Crear un tag consistente para la animación Hero
+        context.go('/asterisco99');
         break;
       case "Mi número oculto":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const NumeroOcultoPage(),
-          ),
-        );
+        // Crear un tag consistente para la animación Hero
+        context.go('/numero-oculto');
         break;
       case "Números útiles":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const NumerosUtilesPage(),
-          ),
-        );
+        // Crear un tag consistente para la animación Hero
+        context.go('/numeros-utiles');
         break;
     }
   }
@@ -274,13 +278,8 @@ class _SubmenuPageState extends State<SubmenuPage> {
 
   // Diálogo para transferir saldo
   void _showTransferDialog(BuildContext context) {
-    // Navegar a la página de transferencia de saldo
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const TransferirSaldoPage(),
-      ),
-    );
+    // Usar GoRouter para navegar
+    context.go('/transferir-saldo');
   }
 
   // Diálogo para llamada normal
@@ -322,9 +321,9 @@ class _SubmenuPageState extends State<SubmenuPage> {
         widget.title == "SOLO Líneas USIM con LTE (nuevas)";
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: const Color(0xFF333333),
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: const Color(0xFF333333),
         elevation: 0,
         title: Text(
           widget.title,
@@ -374,10 +373,13 @@ class _SubmenuPageState extends State<SubmenuPage> {
                 final heroTag = 'submenu_icon_${widget.title}_${item.title}'
                     .replaceAll(" ", "_");
 
-                return MenuItemCard(
-                  item: item,
-                  heroTag: heroTag,
+                return ItemGeneral(
+                  icon: item.icon,
+                  title: item.title,
+                  subtitle: item.subtitle,
+                  color: Colors.blue,
                   showChevron: _shouldShowChevron(item),
+                  heroTag: heroTag,
                   onTap: () => _handleItemTap(context, item, heroTag),
                 );
               },

@@ -1,12 +1,11 @@
 import 'package:bono/services/history_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bono/config/utils/ussd_service.dart';
 import 'package:bono/models/history_model.dart';
-import 'package:bono/presentation/pages/asterisco99_page.dart';
-import 'package:bono/presentation/pages/numero_oculto_page.dart';
 
 class HistoryView extends StatefulWidget {
   final Function(String) onStatusMessage;
@@ -25,8 +24,6 @@ class _HistoryViewState extends State<HistoryView> {
   bool _isLoading = true;
   bool _isExecutingUssd = false;
 
-  // Cambiar el canal para usar el mismo que ya está funcionando
-  static const platform = MethodChannel('com.example.bono/ussd');
   // Canal para USSD
   static const ussdPlatform = MethodChannel('com.example.bono/ussd');
 
@@ -49,7 +46,7 @@ class _HistoryViewState extends State<HistoryView> {
     });
   }
 
-  // Modificar el método _executeUssdFromHistory para manejar casos especiales
+  // Modificar el método _executeUssdFromHistory para manejar el caso de Transferir Saldo
   Future<void> _executeUssdFromHistory(HistoryItem item) async {
     if (_isExecutingUssd) return;
 
@@ -58,7 +55,7 @@ class _HistoryViewState extends State<HistoryView> {
     });
 
     try {
-      // Casos especiales para Asterisco 99, Mi número oculto y Números útiles
+      // Casos especiales para Asterisco 99, Mi número oculto, Números útiles y Transferir Saldo
       if (item.title == "Asterisco 99") {
         // Navegar a la página Asterisco99Page sin pasar número
         if (mounted) {
@@ -66,13 +63,8 @@ class _HistoryViewState extends State<HistoryView> {
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          Navigator.push(
-            // ignore: use_build_context_synchronously
-            context,
-            MaterialPageRoute(
-              builder: (context) => const Asterisco99Page(),
-            ),
-          );
+          // Usar GoRouter para navegar
+          context.go('/asterisco99');
         }
         return;
       } else if (item.title == "Mi número oculto") {
@@ -82,13 +74,30 @@ class _HistoryViewState extends State<HistoryView> {
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          Navigator.push(
-            // ignore: use_build_context_synchronously
-            context,
-            MaterialPageRoute(
-              builder: (context) => const NumeroOcultoPage(),
-            ),
-          );
+          // Usar GoRouter para navegar
+          context.go('/numero-oculto');
+        }
+        return;
+      } else if (item.title == "Números útiles") {
+        // Navegar a la página NumerosUtilesPage
+        if (mounted) {
+          // Actualizar la fecha del elemento actual para que aparezca primero
+          await _updateHistoryItemTimestamp(item);
+          await _loadHistory();
+
+          // Usar GoRouter para navegar
+          context.go('/numeros-utiles');
+        }
+        return;
+      } else if (item.title == "Transferir Saldo") {
+        // Navegar a la página TransferirSaldoPage
+        if (mounted) {
+          // Actualizar la fecha del elemento actual para que aparezca primero
+          await _updateHistoryItemTimestamp(item);
+          await _loadHistory();
+
+          // Usar GoRouter para navegar
+          context.go('/transferir-saldo');
         }
         return;
       } else if (item.title.contains("Atención al cliente") ||
@@ -105,7 +114,7 @@ class _HistoryViewState extends State<HistoryView> {
           await _loadHistory();
 
           // Ejecutar la llamada directamente usando el método nativo
-          await platform.invokeMethod('makeDirectCall', {
+          await ussdPlatform.invokeMethod('makeDirectCall', {
             'phoneNumber': item.code.replaceAll("#", ""),
           });
         } catch (e) {
@@ -149,7 +158,18 @@ class _HistoryViewState extends State<HistoryView> {
       }
     } catch (e) {
       if (mounted) {
-        // Manejar error silenciosamente
+        // Mostrar error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: $e',
+              style: GoogleFonts.montserrat(
+                letterSpacing: -0.3,
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -167,7 +187,7 @@ class _HistoryViewState extends State<HistoryView> {
       title: item.title,
       subtitle: item.subtitle,
       icon: item.icon,
-      color: item.color,
+      color: item.color, // Mantener el color original
       code: item.code,
       timestamp: DateTime.now(),
     );
@@ -237,7 +257,6 @@ class _HistoryViewState extends State<HistoryView> {
     }
   }
 
-  // Modificar el método build para mostrar solo el código y la fecha para transferencias
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {

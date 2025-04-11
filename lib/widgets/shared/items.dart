@@ -40,77 +40,77 @@ const List<MenuItems> menuItems = [
     title: "Asterisco 99",
     subtitle: "Llamada con pago revertido",
     icon: Icons.call,
-    color: Colors.blue,
+    color: Colors.blue, // Mantener azul en el menú principal
     ussdCode: "*99#", // Código USSD para llamada con pago revertido
   ),
   MenuItems(
     title: "Gestionar Llamadas",
     subtitle: "Realiza llamadas de manera fácil",
     icon: Icons.call,
-    color: Colors.blue,
+    color: Colors.blue, // Mantener azul en el menú principal
     hasSubmenu: true,
     submenuItems: [
       MenuItems(
         title: "Asterisco 99",
         subtitle: "Llamada con pago revertido",
         icon: Icons.call,
-        color: Colors.blue,
+        color: Colors.blue, // Mantener azul en el menú principal
         ussdCode: "*99#",
       ),
       MenuItems(
         title: "Mi número oculto",
         subtitle: "Llama sin mostrar tu número",
         icon: Icons.call,
-        color: Colors.blue,
+        color: Colors.blue, // Mantener azul en el menú principal
         ussdCode: "#31#",
       ),
       MenuItems(
         title: "Números útiles",
         subtitle: "Ambulancia, Bomberos, Policía, Etc.",
         icon: Icons.call,
-        color: Colors.blue,
+        color: Colors.blue, // Mantener azul en el menú principal
         hasSubmenu: true,
         submenuItems: [
           MenuItems(
             title: "*2266 - Atención al cliente",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "*2266#",
           ),
           MenuItems(
             title: "103 - Línea Antidrogas",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "103",
           ),
           MenuItems(
             title: "104 - Ambulancias",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "104",
           ),
           MenuItems(
             title: "105 - Bomberos",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "105",
           ),
           MenuItems(
             title: "106 - Policía",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "106",
           ),
           MenuItems(
             title: "107 - Salvamento Marítimo",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "107",
           ),
           MenuItems(
             title: "118 - Cubacel Info",
             icon: Icons.call,
-            color: Colors.blue,
+            color: Colors.blue, // Mantener azul en el menú principal
             ussdCode: "118",
           ),
         ],
@@ -133,7 +133,7 @@ const List<MenuItems> menuItems = [
       MenuItems(
         title: "Transferir saldo",
         icon: Icons.send_to_mobile,
-        color: Colors.blue,
+        color: Colors.orange, // Mantener naranja para transferencias
         // Aquí se abrirá un diálogo para transferir saldo
       ),
     ],
@@ -429,14 +429,14 @@ const List<MenuItems> historyItems = [
     title: "Gestionar Llamadas",
     subtitle: "Realiza llamadas de manera fácil",
     icon: Icons.call,
-    color: Colors.blue,
+    color: Colors.green, // Verde en el historial
     hasSubmenu: true,
   ),
   MenuItems(
     title: "Asterisco 99",
     subtitle: "Llamada con pago revertido",
     icon: Icons.call,
-    color: Colors.blue,
+    color: Colors.green, // Verde en el historial
     ussdCode: "*99#",
   ),
   MenuItems(

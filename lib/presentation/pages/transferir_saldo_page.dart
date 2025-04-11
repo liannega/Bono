@@ -226,7 +226,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
         await HistoryService.addToHistory(transferItem, "*234");
 
         // Volver a la pantalla anterior
-        // ignore: use_build_context_synchronously
         Navigator.pop(context);
       }
     } catch (e) {
@@ -299,7 +298,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
               // Icono de transferencia con Hero (solo flecha en círculo azul)
               const SizedBox(height: 40),
               const Hero(
-                tag: 'transfer_icon_hero',
+                tag: 'menu_icon_Transferir_saldo',
                 child: CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.blue,
