@@ -192,15 +192,19 @@ class _NumeroOcultoPageState extends State<NumeroOcultoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final backgroundColor = theme.scaffoldBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF333333),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           'Mi número oculto',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 24,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.5,
@@ -208,7 +212,7 @@ class _NumeroOcultoPageState extends State<NumeroOcultoPage> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -256,7 +260,7 @@ class _NumeroOcultoPageState extends State<NumeroOcultoPage> {
                     child: TextField(
                       controller: _phoneController,
                       style: GoogleFonts.montserrat(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 18,
                         letterSpacing: -0.3,
                       ),

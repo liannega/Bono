@@ -61,7 +61,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
 
   // Obtener el icono grande para mostrar en la parte superior según el título
   Widget _getHeaderIcon() {
-    double iconSize = 30.0;
+    double iconSize = 30.0; // Reducido de 34.0 a 30.0
     Color iconColor = Colors.white;
     Color backgroundColor = Colors.blue;
 
@@ -89,9 +89,20 @@ class _SubmenuPageState extends State<SubmenuPage> {
     // Crear un CircleAvatar con Hero para la animación
     return Hero(
       tag: heroTag,
-      child: CircleAvatar(
-        radius: 35,
-        backgroundColor: backgroundColor,
+      child: Container(
+        width: 65, // Reducido de 75 a 65
+        height: 65, // Reducido de 75 a 65
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: backgroundColor.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            )
+          ],
+        ),
         child: Icon(
           iconData,
           color: iconColor,
@@ -320,22 +331,28 @@ class _SubmenuPageState extends State<SubmenuPage> {
         widget.title == "Tarifa por consumo" ||
         widget.title == "SOLO Líneas USIM con LTE (nuevas)";
 
+    final theme = Theme.of(context);
+    final backgroundColor = theme.scaffoldBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
+    final isLightMode = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF333333),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           widget.title,
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: isLightMode ? Colors.blue : textColor,
             fontSize: 20,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             letterSpacing: -0.5,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back,
+              color: isLightMode ? Colors.blue : textColor),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -343,17 +360,32 @@ class _SubmenuPageState extends State<SubmenuPage> {
         children: [
           // Mostrar solo un icono, ya sea el del padre o el generado por _getHeaderIcon
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+                vertical: 8.0), // Reducido de 12.0 a 8.0
             child: widget.parentHeroTag != null && !isPlanSubmenu
                 ? Hero(
                     tag: widget.parentHeroTag!,
-                    child: CircleAvatar(
-                      radius: 35,
-                      backgroundColor: widget.parentColor ?? Colors.blue,
+                    child: Container(
+                      width: 65, // Reducido de 75 a 65
+                      height: 65, // Reducido de 75 a 65
+                      decoration: BoxDecoration(
+                        color: widget.parentColor ?? Colors.blue,
+                        shape: BoxShape.circle,
+                        boxShadow: isLightMode
+                            ? [
+                                BoxShadow(
+                                  color: (widget.parentColor ?? Colors.blue)
+                                      .withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                )
+                              ]
+                            : null,
+                      ),
                       child: Icon(
                         widget.parentIcon ?? Icons.folder_open,
                         color: Colors.white,
-                        size: 30,
+                        size: 30, // Reducido de 34 a 30
                       ),
                     ),
                   )
@@ -365,6 +397,8 @@ class _SubmenuPageState extends State<SubmenuPage> {
           // Lista de elementos
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(
+                  vertical: 4.0), // Reducido de 8.0 a 4.0
               itemCount: widget.items.length,
               itemBuilder: (context, index) {
                 final item = widget.items[index];

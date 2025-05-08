@@ -72,6 +72,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
       }
     } catch (e) {
       // Mostrar un mensaje de error pero no un diálogo
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -105,14 +106,18 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
     final clave = _claveController.text.trim();
 
     // Mostrar diálogo de confirmación con resumen de la transferencia
+    final theme = Theme.of(context);
+    final backgroundColor = theme.dialogBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         title: Text(
           'Confirmar transferencia',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 18,
             letterSpacing: -0.5,
           ),
@@ -124,7 +129,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
             Text(
               'Vas a transferir:',
               style: GoogleFonts.montserrat(
-                color: Colors.white,
+                color: textColor,
                 fontSize: 16,
                 letterSpacing: -0.3,
                 height: 1.5,
@@ -138,7 +143,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                 Text(
                   'Número: $phone',
                   style: GoogleFonts.montserrat(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: 14,
                     letterSpacing: -0.3,
                   ),
@@ -153,7 +158,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                 Text(
                   'Cantidad: $amount pesos',
                   style: GoogleFonts.montserrat(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: 14,
                     letterSpacing: -0.3,
                   ),
@@ -226,6 +231,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
         await HistoryService.addToHistory(transferItem, "*234");
 
         // Volver a la pantalla anterior
+        // ignore: use_build_context_synchronously
         Navigator.pop(context);
       }
     } catch (e) {
@@ -270,15 +276,19 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final backgroundColor = theme.scaffoldBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF333333),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           'Transferir Saldo',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 24,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.5,
@@ -286,7 +296,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -336,7 +346,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                       child: TextField(
                         controller: _phoneController,
                         style: GoogleFonts.montserrat(
-                          color: Colors.white,
+                          color: textColor,
                           fontSize: 18,
                           letterSpacing: -0.3,
                         ),
@@ -436,7 +446,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                       child: TextField(
                         controller: _amountController,
                         style: GoogleFonts.montserrat(
-                          color: Colors.white,
+                          color: textColor,
                           fontSize: 18,
                           letterSpacing: -0.3,
                         ),
@@ -510,7 +520,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                     Text(
                       'CLAVE',
                       style: GoogleFonts.montserrat(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         letterSpacing: -0.3,
@@ -551,7 +561,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                       child: TextField(
                         controller: _claveController,
                         style: GoogleFonts.montserrat(
-                          color: Colors.white,
+                          color: textColor,
                           fontSize: 18,
                           letterSpacing: -0.3,
                         ),

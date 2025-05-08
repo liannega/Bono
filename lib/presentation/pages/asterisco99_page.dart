@@ -193,15 +193,19 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final backgroundColor = theme.scaffoldBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF333333),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           'Asterisco 99',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 24,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.5,
@@ -209,7 +213,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -257,7 +261,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
                     child: TextField(
                       controller: _phoneController,
                       style: GoogleFonts.montserrat(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 18,
                         letterSpacing: -0.3,
                       ),

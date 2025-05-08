@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bono/presentation/pages/asterisco99_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Provider para el estado de la página actual
 final currentPageProvider = StateProvider<int>((ref) => 0);
@@ -49,22 +48,6 @@ class _HomePageState extends ConsumerState<HomePage>
 
     // Inicializar el servicio de historial
     HistoryService.initialize();
-
-    // Cargar el estado del tema
-    _loadThemePreference();
-  }
-
-  // Cargar la preferencia del tema
-  Future<void> _loadThemePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDark = prefs.getBool('is_dark_mode') ?? true;
-    ref.read(isDarkModeProvider.notifier).state = isDark;
-  }
-
-  // Guardar la preferencia del tema
-  Future<void> _saveThemePreference(bool isDark) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_dark_mode', isDark);
   }
 
   Future<void> _checkPermission() async {
@@ -94,19 +77,20 @@ class _HomePageState extends ConsumerState<HomePage>
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF333333),
+          backgroundColor: Theme.of(context).dialogBackgroundColor,
           title: Text(
             'Ejecutar ${item.title}',
             style: GoogleFonts.montserrat(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 18,
               letterSpacing: -0.5,
+              fontWeight: FontWeight.w600,
             ),
           ),
           content: Text(
             '¿Deseas ejecutar el código ${item.ussdCode}?',
             style: GoogleFonts.montserrat(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14,
               letterSpacing: -0.3,
             ),
@@ -204,11 +188,52 @@ class _HomePageState extends ConsumerState<HomePage>
     // No hacer nada - mensajes de estado desactivados
   }
 
+  // Método para cambiar el tema
+  void _toggleTheme() {
+    final currentThemeMode = ref.read(themeModeProvider);
+    ThemeMode newThemeMode;
+
+    // Rotar entre los modos: sistema -> claro -> oscuro -> sistema
+    switch (currentThemeMode) {
+      case ThemeMode.system:
+        newThemeMode = ThemeMode.light;
+        break;
+      case ThemeMode.light:
+        newThemeMode = ThemeMode.dark;
+        break;
+      case ThemeMode.dark:
+      default:
+        newThemeMode = ThemeMode.system;
+        break;
+    }
+
+    ref.read(themeModeProvider.notifier).state = newThemeMode;
+    saveThemeMode(newThemeMode);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentPage = ref.watch(currentPageProvider);
-    final isDarkMode = ref.watch(isDarkModeProvider);
-    const backgroundColor = Color(0xFF333333);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = isDarkMode(context);
+    final theme = Theme.of(context);
+    final backgroundColor = theme.scaffoldBackgroundColor;
+    //final textColor = theme.colorScheme.onSurface;
+
+    // Determinar qué icono mostrar según el modo de tema
+    IconData themeIcon;
+    switch (themeMode) {
+      case ThemeMode.light:
+        themeIcon = Icons.dark_mode;
+        break;
+      case ThemeMode.dark:
+        themeIcon = Icons.light_mode;
+        break;
+      case ThemeMode.system:
+      default:
+        themeIcon = isDark ? Icons.light_mode : Icons.dark_mode;
+        break;
+    }
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -216,9 +241,9 @@ class _HomePageState extends ConsumerState<HomePage>
         title: Text(
           'BONO',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.w400,
+            color: Colors.blue,
+            fontSize: 23,
+            fontWeight: FontWeight.w500,
             letterSpacing: -0.5,
           ),
         ),
@@ -229,14 +254,10 @@ class _HomePageState extends ConsumerState<HomePage>
           // Botón de cambio de tema
           IconButton(
             icon: Icon(
-              isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: Colors.white,
+              themeIcon,
+              color: Colors.blue,
             ),
-            onPressed: () {
-              final newValue = !isDarkMode;
-              ref.read(isDarkModeProvider.notifier).state = newValue;
-              _saveThemePreference(newValue);
-            },
+            onPressed: _toggleTheme,
           ),
           // Espacio para equilibrar el diseño
           const SizedBox(width: 8),
@@ -246,7 +267,7 @@ class _HomePageState extends ConsumerState<HomePage>
         children: [
           // Iconos de navegación superiores
           Container(
-            padding: const EdgeInsets.only(top: 10, bottom: 30),
+            padding: const EdgeInsets.only(top: 2, bottom: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -260,20 +281,32 @@ class _HomePageState extends ConsumerState<HomePage>
                     );
                   },
                   child: Container(
-                    width: 65,
-                    height: 65,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: currentPage == 0 ? Colors.blue : backgroundColor,
                       shape: BoxShape.circle,
+                      border: currentPage != 0
+                          ? Border.all(color: Colors.blue.withOpacity(0.3))
+                          : null,
+                      boxShadow: currentPage == 0
+                          ? [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 3),
+                              )
+                            ]
+                          : null,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.phone_android,
-                      color: Colors.white,
-                      size: 30,
+                      color: currentPage == 0 ? Colors.white : Colors.blue,
+                      size: 35,
                     ),
                   ),
                 ),
-                const SizedBox(width: 5),
+                const SizedBox(width: 10),
                 // Icono de historial
                 InkWell(
                   onTap: () {
@@ -284,16 +317,28 @@ class _HomePageState extends ConsumerState<HomePage>
                     );
                   },
                   child: Container(
-                    width: 65,
-                    height: 65,
+                    width: 60,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: currentPage == 1 ? Colors.blue : backgroundColor,
                       shape: BoxShape.circle,
+                      border: currentPage != 1
+                          ? Border.all(color: Colors.blue.withOpacity(0.3))
+                          : null,
+                      boxShadow: currentPage == 1
+                          ? [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              )
+                            ]
+                          : null,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.history,
-                      color: Colors.white,
-                      size: 30,
+                      color: currentPage == 1 ? Colors.white : Colors.blue,
+                      size: 35,
                     ),
                   ),
                 ),

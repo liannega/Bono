@@ -11,14 +11,18 @@ class DialogService {
     String cancelText = 'Cancelar',
     String confirmText = 'Aceptar',
   }) {
+    final theme = Theme.of(context);
+    final backgroundColor = theme.dialogBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
+
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         title: Text(
           title,
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 18,
             letterSpacing: -0.5,
           ),
@@ -26,7 +30,7 @@ class DialogService {
         content: Text(
           content,
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 14,
             letterSpacing: -0.3,
             height: 1.1,
@@ -70,15 +74,18 @@ class DialogService {
     TextInputType keyboardType = TextInputType.text,
   }) {
     final TextEditingController controller = TextEditingController();
+    final theme = Theme.of(context);
+    final backgroundColor = theme.dialogBackgroundColor;
+    final textColor = theme.colorScheme.onSurface;
 
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         title: Text(
           title,
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 18,
             letterSpacing: -0.5,
           ),
@@ -104,7 +111,7 @@ class DialogService {
             ),
           ),
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             letterSpacing: -0.3,
           ),
           keyboardType: keyboardType,
@@ -136,4 +143,3 @@ class DialogService {
     );
   }
 }
-

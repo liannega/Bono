@@ -16,6 +16,8 @@ class MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.only(
+          top: 5, bottom: 10), // Reducido de top: 10, bottom: 20
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:bono/services/history_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -197,14 +199,17 @@ class _HistoryViewState extends State<HistoryView> {
   }
 
   Future<void> _clearHistory() async {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final backgroundColor = Theme.of(context).colorScheme.surface;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: backgroundColor,
         title: Text(
           'Limpiar historial',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 18,
             letterSpacing: -0.5,
           ),
@@ -212,7 +217,7 @@ class _HistoryViewState extends State<HistoryView> {
         content: Text(
           '¿Estás seguro de que deseas limpiar todo el historial?',
           style: GoogleFonts.montserrat(
-            color: Colors.white,
+            color: textColor,
             fontSize: 14,
             letterSpacing: -0.3,
             height: 1.1,
@@ -259,6 +264,9 @@ class _HistoryViewState extends State<HistoryView> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    //final backgroundColor = Theme.of(context).colorScheme.surface;
+
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -358,7 +366,9 @@ class _HistoryViewState extends State<HistoryView> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
                 child: Card(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.05),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -391,7 +401,7 @@ class _HistoryViewState extends State<HistoryView> {
                                   style: GoogleFonts.montserrat(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.white,
+                                    color: textColor,
                                     letterSpacing: -0.5,
                                     height: 1.1,
                                   ),

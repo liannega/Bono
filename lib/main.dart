@@ -4,6 +4,7 @@ import 'package:bono/services/widget_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   // Asegurarse de que los widgets estén inicializados
@@ -12,7 +13,20 @@ void main() async {
   // Verificar si el widget está habilitado en las preferencias
   final prefs = await SharedPreferences.getInstance();
   final isWidgetEnabled = prefs.getBool('widget_enabled') ?? false;
-  final isDarkMode = prefs.getBool('is_dark_mode') ?? true;
+
+  // Obtener el tema guardado o usar el tema del sistema
+  final savedThemeMode = prefs.getString('theme_mode');
+  ThemeMode initialThemeMode;
+
+  if (savedThemeMode == null) {
+    // Si no hay tema guardado, usar el tema del sistema
+    initialThemeMode = ThemeMode.system;
+  } else {
+    // Si hay tema guardado, usarlo
+    initialThemeMode = savedThemeMode == 'dark'
+        ? ThemeMode.dark
+        : (savedThemeMode == 'light' ? ThemeMode.light : ThemeMode.system);
+  }
 
   // Si el widget está habilitado, actualizarlo
   if (isWidgetEnabled) {
@@ -25,61 +39,156 @@ void main() async {
 
   runApp(
     ProviderScope(
-      child: MyApp(initialDarkMode: isDarkMode),
+      child: MyApp(initialThemeMode: initialThemeMode),
     ),
   );
 }
 
 class MyApp extends ConsumerStatefulWidget {
-  final bool initialDarkMode;
+  final ThemeMode initialThemeMode;
 
-  const MyApp({super.key, required this.initialDarkMode});
+  const MyApp({super.key, required this.initialThemeMode});
 
   @override
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  late ThemeMode _themeMode;
+
   @override
   void initState() {
     super.initState();
-    // Inicializamos el provider con el valor inicial
+    _themeMode = widget.initialThemeMode;
+
+    // Inicializar el provider con el valor inicial
     Future.microtask(() {
-      ref.read(isDarkModeProvider.notifier).state = widget.initialDarkMode;
+      ref.read(themeModeProvider.notifier).state = _themeMode;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'BONO',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor:
-            isDarkMode ? const Color(0xFF333333) : Colors.white,
+        scaffoldBackgroundColor: Colors.white,
         primaryColor: Colors.blue,
         appBarTheme: AppBarTheme(
-          backgroundColor: isDarkMode ? const Color(0xFF333333) : Colors.white,
+          backgroundColor: Colors.white,
           elevation: 0,
-          iconTheme: IconThemeData(
-            color: isDarkMode ? Colors.white : Colors.black,
+          iconTheme: const IconThemeData(
+            color: Colors.blue,
           ),
-          titleTextStyle: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
+          titleTextStyle: GoogleFonts.montserrat(
+            color: Colors.blue,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        colorScheme: isDarkMode
-            ? const ColorScheme.dark(
-                primary: Colors.blue,
-                secondary: Colors.blue,
-              )
-            : const ColorScheme.light(
-                primary: Colors.blue,
-                secondary: Colors.blue,
-              ),
+        colorScheme: const ColorScheme.light(
+          primary: Colors.blue,
+          secondary: Colors.blue,
+          surface: Colors.white,
+          onSurface: Color(0xFF333333),
+        ),
+        textTheme: TextTheme(
+          bodyLarge: GoogleFonts.montserrat(
+            color: const Color(0xFF333333),
+            fontSize: 18, // Aumentado de 16 a 18
+          ),
+          bodyMedium: GoogleFonts.montserrat(
+            color: const Color(0xFF333333),
+            fontSize: 16, // Aumentado de 14 a 16
+          ),
+          titleLarge: GoogleFonts.montserrat(
+            color: const Color(0xFF333333),
+            fontSize: 22, // Aumentado de 20 a 22
+            fontWeight: FontWeight.w600,
+          ),
+          titleMedium: GoogleFonts.montserrat(
+            color: const Color(0xFF333333),
+            fontSize: 20, // Aumentado de 18 a 20
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        cardColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.blue),
+        dialogBackgroundColor: Colors.white,
+        dividerColor: Colors.grey.withOpacity(0.2),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          ),
+        ),
       ),
+      darkTheme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFF333333),
+        primaryColor: Colors.blue,
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFF333333),
+          elevation: 0,
+          iconTheme: const IconThemeData(
+            color: Colors.blue,
+          ),
+          titleTextStyle: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.blue,
+          secondary: Colors.blue,
+          surface: Color(0xFF333333),
+          onSurface: Colors.white,
+        ),
+        textTheme: TextTheme(
+          bodyLarge: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 18, // Aumentado de 16 a 18
+          ),
+          bodyMedium: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 16, // Aumentado de 14 a 16
+          ),
+          titleLarge: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 22, // Aumentado de 20 a 22
+            fontWeight: FontWeight.w600,
+          ),
+          titleMedium: GoogleFonts.montserrat(
+            color: Colors.white,
+            fontSize: 20, // Aumentado de 18 a 20
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        cardColor: const Color(0xFF424242),
+        iconTheme: const IconThemeData(color: Colors.blue),
+        dialogBackgroundColor: const Color(0xFF333333),
+        dividerColor: Colors.grey.withOpacity(0.2),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          ),
+        ),
+      ),
+      themeMode: themeMode,
       routerConfig: appRouter,
     );
   }

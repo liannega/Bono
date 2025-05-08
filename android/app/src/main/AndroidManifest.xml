@@ -8,7 +8,7 @@
   <uses-permission android:name="android.permission.READ_CONTACTS" />
 
   <application
-      android:label="BONO"
+      android:label="Bono"
       android:name="${applicationName}"
       android:icon="@mipmap/ic_launcher">
       <activity

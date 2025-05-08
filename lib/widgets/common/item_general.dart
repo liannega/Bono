@@ -1,3 +1,5 @@
+//TODO arrelaste el el item general y el home page acuardate de darselo a V0
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,26 +42,28 @@ class ItemGeneral extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final itemColor = color ?? Colors.blue;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final isLightMode = Theme.of(context).brightness == Brightness.light;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
       child: Card(
         color: Colors.transparent,
         elevation: 0,
-        margin: const EdgeInsets.symmetric(vertical: 4.0),
+        margin: EdgeInsets.zero,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          splashColor: itemColor.withOpacity(0.3),
+          splashColor: itemColor.withOpacity(0.2),
           highlightColor: itemColor.withOpacity(0.1),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
             child: Row(
               children: [
                 // Círculo con icono (con o sin Hero animation)
-                _buildIconCircle(itemColor),
+                _buildIconCircle(itemColor, isLightMode),
 
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
 
                 // Contenido de texto (título y subtítulo)
                 Expanded(
@@ -69,21 +73,24 @@ class ItemGeneral extends StatelessWidget {
                       Text(
                         title,
                         style: GoogleFonts.montserrat(
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
+                          color: textColor,
+                          letterSpacing: -0.3,
                           height: 1.1,
                         ),
                       ),
                       if (subtitle != null)
-                        Text(
-                          subtitle!,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            color: Colors.grey,
-                            letterSpacing: -0.3,
-                            height: 1.1,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 1.0),
+                          child: Text(
+                            subtitle!,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              color: Colors.grey,
+                              letterSpacing: -0.2,
+                              height: 1.1,
+                            ),
                           ),
                         ),
                     ],
@@ -95,7 +102,7 @@ class ItemGeneral extends StatelessWidget {
                   const Icon(
                     Icons.chevron_right,
                     color: Colors.blue,
-                    size: 30,
+                    size: 24,
                   ),
               ],
             ),
@@ -106,14 +113,27 @@ class ItemGeneral extends StatelessWidget {
   }
 
   /// Construye el círculo con el icono, con o sin animación Hero
-  Widget _buildIconCircle(Color itemColor) {
-    final circleAvatar = CircleAvatar(
-      radius: 30,
-      backgroundColor: itemColor,
+  Widget _buildIconCircle(Color itemColor, bool isLightMode) {
+    final circleAvatar = Container(
+      width: 55,
+      height: 55,
+      decoration: BoxDecoration(
+        color: itemColor,
+        shape: BoxShape.circle,
+        boxShadow: isLightMode
+            ? [
+                BoxShadow(
+                  color: itemColor.withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                )
+              ]
+            : null,
+      ),
       child: Icon(
         icon,
         color: Colors.white,
-        size: 30,
+        size: 25,
       ),
     );
 
