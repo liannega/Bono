@@ -1,3 +1,3 @@
 # bono
 
-A new Flutter project.
+Aplicación para consultar distintos plnes y servicios de Etecsa.
