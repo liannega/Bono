@@ -18,14 +18,12 @@ class CustomDrawer extends StatelessWidget {
       backgroundColor: const Color(0xFF212121),
       child: Column(
         children: [
-          // Header con logo y título
           Container(
             padding: const EdgeInsets.only(top: 50, bottom: 20),
             width: double.infinity,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Botón de tema en la esquina superior derecha
                 Align(
                   alignment: Alignment.topRight,
                   child: Padding(
@@ -43,7 +41,6 @@ class CustomDrawer extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Logo circular
                 Container(
                   width: 100,
                   height: 100,
@@ -58,7 +55,6 @@ class CustomDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Texto "BONO"
                 Text(
                   'BONO',
                   style: GoogleFonts.montserrat(
@@ -72,7 +68,6 @@ class CustomDrawer extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: Color.fromARGB(255, 87, 86, 86)),
-          // Único elemento de Ajustes
           ListTile(
             leading: const Icon(Icons.settings, color: Colors.white),
             title: Text(
@@ -80,12 +75,12 @@ class CustomDrawer extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 color: Colors.white,
                 fontSize: 16,
-                letterSpacing: -0.3, // Letras más juntas
+                letterSpacing: -0.3,
               ),
             ),
             onTap: () {
-              Navigator.pop(context); // Cierra el drawer
-              context.go('/settings'); // Usar GoRouter para navegar
+              Navigator.pop(context);
+              context.go('/settings');
             },
           ),
         ],

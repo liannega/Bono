@@ -17,7 +17,7 @@ class HistoryItem {
     required this.color,
   });
 
-  // Convertir a Map para almacenamiento
+
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -31,7 +31,7 @@ class HistoryItem {
     };
   }
 
-  // Crear desde Map para recuperación
+
   factory HistoryItem.fromMap(Map<String, dynamic> map) {
     return HistoryItem(
       title: map['title'],

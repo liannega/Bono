@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Servicio para manejar diálogos comunes en la aplicación
 class DialogService {
-  /// Muestra un diálogo de confirmación genérico
   static Future<bool?> showConfirmationDialog({
     required BuildContext context,
     required String title,
@@ -63,7 +61,6 @@ class DialogService {
     );
   }
 
-  /// Muestra un diálogo con un campo de texto
   static Future<String?> showInputDialog({
     required BuildContext context,
     required String title,

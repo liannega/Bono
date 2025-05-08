@@ -15,7 +15,6 @@ class NumerosUtilesPage extends StatefulWidget {
 class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
   bool _isExecutingCall = false;
 
-  // Lista de números útiles
   final List<MenuItems> _numerosUtiles = const [
     MenuItems(
       title: "*2266 - Atención al cliente",
@@ -61,7 +60,6 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
     ),
   ];
 
-  // Método para realizar llamadas directas
   Future<void> _makeDirectCall(MenuItems item) async {
     if (_isExecutingCall) return;
 
@@ -70,20 +68,16 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
     });
 
     try {
-      // Obtener el número de teléfono
       String phoneNumber = item.ussdCode!;
 
-      // Ejecutar la llamada directamente usando el método nativo
       await const MethodChannel('com.example.bono/ussd')
           .invokeMethod('makeDirectCall', {
         'phoneNumber': phoneNumber,
       });
 
-      // Agregar al historial
       await HistoryService.addToHistory(item, phoneNumber);
     } catch (e) {
       if (mounted) {
-        // Mostrar un mensaje de error pero no un diálogo
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -133,7 +127,6 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
       ),
       body: Column(
         children: [
-          // Añadimos el Hero para el icono grande con tamaño ajustado
           const SizedBox(height: 20),
           const Hero(
             tag: 'menu_icon_Números_útiles',
@@ -148,8 +141,6 @@ class _NumerosUtilesPageState extends State<NumerosUtilesPage> {
             ),
           ),
           const SizedBox(height: 20),
-
-          // Lista de números útiles
           Expanded(
             child: ListView.builder(
               itemCount: _numerosUtiles.length,

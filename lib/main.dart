@@ -7,28 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
-  // Asegurarse de que los widgets estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Verificar si el widget está habilitado en las preferencias
   final prefs = await SharedPreferences.getInstance();
   final isWidgetEnabled = prefs.getBool('widget_enabled') ?? false;
 
-  // Obtener el tema guardado o usar el tema del sistema
   final savedThemeMode = prefs.getString('theme_mode');
   ThemeMode initialThemeMode;
 
   if (savedThemeMode == null) {
-    // Si no hay tema guardado, usar el tema del sistema
     initialThemeMode = ThemeMode.system;
   } else {
-    // Si hay tema guardado, usarlo
     initialThemeMode = savedThemeMode == 'dark'
         ? ThemeMode.dark
         : (savedThemeMode == 'light' ? ThemeMode.light : ThemeMode.system);
   }
 
-  // Si el widget está habilitado, actualizarlo
   if (isWidgetEnabled) {
     try {
       await WidgetService.enableWidget();
@@ -61,7 +55,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     super.initState();
     _themeMode = widget.initialThemeMode;
 
-    // Inicializar el provider con el valor inicial
     Future.microtask(() {
       ref.read(themeModeProvider.notifier).state = _themeMode;
     });
@@ -98,20 +91,20 @@ class _MyAppState extends ConsumerState<MyApp> {
         textTheme: TextTheme(
           bodyLarge: GoogleFonts.montserrat(
             color: const Color(0xFF333333),
-            fontSize: 18, // Aumentado de 16 a 18
+            fontSize: 18,
           ),
           bodyMedium: GoogleFonts.montserrat(
             color: const Color(0xFF333333),
-            fontSize: 16, // Aumentado de 14 a 16
+            fontSize: 16,
           ),
           titleLarge: GoogleFonts.montserrat(
             color: const Color(0xFF333333),
-            fontSize: 22, // Aumentado de 20 a 22
+            fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
           titleMedium: GoogleFonts.montserrat(
             color: const Color(0xFF333333),
-            fontSize: 20, // Aumentado de 18 a 20
+            fontSize: 20,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -155,20 +148,20 @@ class _MyAppState extends ConsumerState<MyApp> {
         textTheme: TextTheme(
           bodyLarge: GoogleFonts.montserrat(
             color: Colors.white,
-            fontSize: 18, // Aumentado de 16 a 18
+            fontSize: 18,
           ),
           bodyMedium: GoogleFonts.montserrat(
             color: Colors.white,
-            fontSize: 16, // Aumentado de 14 a 16
+            fontSize: 16,
           ),
           titleLarge: GoogleFonts.montserrat(
             color: Colors.white,
-            fontSize: 22, // Aumentado de 20 a 22
+            fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
           titleMedium: GoogleFonts.montserrat(
             color: Colors.white,
-            fontSize: 20, // Aumentado de 18 a 20
+            fontSize: 20,
             fontWeight: FontWeight.w500,
           ),
         ),

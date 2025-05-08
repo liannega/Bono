@@ -9,14 +9,11 @@ import 'package:go_router/go_router.dart';
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    // Ruta principal - HomePage
     GoRoute(
       path: '/',
       name: 'home',
       builder: (context, state) => const HomePage(),
       routes: [
-        // Rutas anidadas
-
         GoRoute(
           path: 'asterisco99',
           name: 'asterisco99',
@@ -40,7 +37,6 @@ final appRouter = GoRouter(
       ],
     ),
   ],
-  // Configuración de errores
   errorBuilder: (context, state) => Scaffold(
     backgroundColor: const Color(0xFF333333),
     body: Center(

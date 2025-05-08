@@ -7,7 +7,7 @@ class MenuItems {
   final Color color;
   final String? ussdCode;
   final bool hasSubmenu;
-  final List<MenuItems>? submenuItems; // Para elementos con submenú
+  final List<MenuItems>? submenuItems;
 
   const MenuItems({
     required this.title,
@@ -20,97 +20,96 @@ class MenuItems {
   });
 }
 
-// Lista de elementos para la vista principal
 const List<MenuItems> menuItems = [
   MenuItems(
     title: "Consulta tu saldo y planes contratados",
     subtitle: "Consulta tu saldo y planes contratados, todo a la vez",
     icon: Icons.attach_money,
     color: Colors.blue,
-    ussdCode: "*222#", // Código USSD para consultar saldo
+    ussdCode: "*222#",
   ),
   MenuItems(
     title: "Consultar bono",
     subtitle: "Consulta el estado de tu bono",
     icon: Icons.star,
     color: Colors.blue,
-    ussdCode: "*222*266#", // Código USSD para consultar bono
+    ussdCode: "*222*266#",
   ),
   MenuItems(
     title: "Asterisco 99",
     subtitle: "Llamada con pago revertido",
     icon: Icons.call,
-    color: Colors.blue, // Mantener azul en el menú principal
-    ussdCode: "*99#", // Código USSD para llamada con pago revertido
+    color: Colors.blue,
+    ussdCode: "*99#",
   ),
   MenuItems(
     title: "Gestionar Llamadas",
     subtitle: "Realiza llamadas de manera fácil",
     icon: Icons.call,
-    color: Colors.blue, // Mantener azul en el menú principal
+    color: Colors.blue,
     hasSubmenu: true,
     submenuItems: [
       MenuItems(
         title: "Asterisco 99",
         subtitle: "Llamada con pago revertido",
         icon: Icons.call,
-        color: Colors.blue, // Mantener azul en el menú principal
+        color: Colors.blue,
         ussdCode: "*99#",
       ),
       MenuItems(
         title: "Mi número oculto",
         subtitle: "Llama sin mostrar tu número",
         icon: Icons.call,
-        color: Colors.blue, // Mantener azul en el menú principal
+        color: Colors.blue,
         ussdCode: "#31#",
       ),
       MenuItems(
         title: "Números útiles",
         subtitle: "Ambulancia, Bomberos, Policía, Etc.",
         icon: Icons.call,
-        color: Colors.blue, // Mantener azul en el menú principal
+        color: Colors.blue,
         hasSubmenu: true,
         submenuItems: [
           MenuItems(
             title: "*2266 - Atención al cliente",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "*2266#",
           ),
           MenuItems(
             title: "103 - Línea Antidrogas",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "103",
           ),
           MenuItems(
             title: "104 - Ambulancias",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "104",
           ),
           MenuItems(
             title: "105 - Bomberos",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "105",
           ),
           MenuItems(
             title: "106 - Policía",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "106",
           ),
           MenuItems(
             title: "107 - Salvamento Marítimo",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "107",
           ),
           MenuItems(
             title: "118 - Cubacel Info",
             icon: Icons.call,
-            color: Colors.blue, // Mantener azul en el menú principal
+            color: Colors.blue,
             ussdCode: "118",
           ),
         ],
@@ -133,8 +132,7 @@ const List<MenuItems> menuItems = [
       MenuItems(
         title: "Transferir saldo",
         icon: Icons.send_to_mobile,
-        color: Colors.orange, // Mantener naranja para transferencias
-        // Aquí se abrirá un diálogo para transferir saldo
+        color: Colors.orange,
       ),
     ],
   ),
@@ -419,24 +417,23 @@ const List<MenuItems> menuItems = [
     subtitle: "Consulta el estado tu plan corporativo",
     icon: Icons.attach_money,
     color: Colors.blue,
-    ussdCode: "*222*3#", // Código para consultar línea corporativa
+    ussdCode: "*222*3#",
   ),
 ];
 
-// Lista de elementos para la vista de historial (similar a la anterior)
 const List<MenuItems> historyItems = [
   MenuItems(
     title: "Gestionar Llamadas",
     subtitle: "Realiza llamadas de manera fácil",
     icon: Icons.call,
-    color: Colors.green, // Verde en el historial
+    color: Colors.green,
     hasSubmenu: true,
   ),
   MenuItems(
     title: "Asterisco 99",
     subtitle: "Llamada con pago revertido",
     icon: Icons.call,
-    color: Colors.green, // Verde en el historial
+    color: Colors.green,
     ussdCode: "*99#",
   ),
   MenuItems(

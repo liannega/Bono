@@ -1,31 +1,21 @@
-//TODO arrelaste el el item general y el home page acuardate de darselo a V0
+
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Widget general reutilizable para mostrar ítems en toda la aplicación
-/// Puede ser usado en menús, listas, submenús, etc.
 class ItemGeneral extends StatelessWidget {
-  /// Icono a mostrar en el ítem
   final IconData icon;
 
-  /// Título principal del ítem
   final String title;
 
-  /// Subtítulo opcional del ítem
   final String? subtitle;
 
-  /// Color del ítem (círculo del icono)
-  /// Si no se proporciona, se usa azul por defecto
   final Color? color;
 
-  /// Indica si se debe mostrar una flecha a la derecha
   final bool showChevron;
 
-  /// Función que se ejecuta al tocar el ítem
   final VoidCallback onTap;
 
-  /// Tag para animación Hero (opcional)
   final String? heroTag;
 
   const ItemGeneral({
@@ -60,12 +50,8 @@ class ItemGeneral extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
             child: Row(
               children: [
-                // Círculo con icono (con o sin Hero animation)
                 _buildIconCircle(itemColor, isLightMode),
-
                 const SizedBox(width: 12),
-
-                // Contenido de texto (título y subtítulo)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,8 +82,6 @@ class ItemGeneral extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // Flecha a la derecha (opcional)
                 if (showChevron)
                   const Icon(
                     Icons.chevron_right,
@@ -112,7 +96,6 @@ class ItemGeneral extends StatelessWidget {
     );
   }
 
-  /// Construye el círculo con el icono, con o sin animación Hero
   Widget _buildIconCircle(Color itemColor, bool isLightMode) {
     final circleAvatar = Container(
       width: 55,
@@ -137,10 +120,7 @@ class ItemGeneral extends StatelessWidget {
       ),
     );
 
-    // Si hay un heroTag, envolver en Hero para animación
     if (heroTag != null) {
-      // Normalizar el heroTag para asegurar consistencia
-      // Usar el título directamente para que sea consistente en toda la navegación
       final normalizedTag = heroTag!.contains('menu_icon_')
           ? heroTag!
           : 'menu_icon_${title.replaceAll(" ", "_")}';

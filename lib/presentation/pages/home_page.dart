@@ -9,13 +9,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bono/presentation/pages/asterisco99_page.dart';
 
-// Provider para el estado de la página actual
 final currentPageProvider = StateProvider<int>((ref) => 0);
 
-// Provider para el estado de ejecución USSD
 final executingUssdProvider = StateProvider<bool>((ref) => false);
 
-// Provider para el mensaje de estado
 final statusMessageProvider = StateProvider<String?>((ref) => null);
 
 class HomePage extends ConsumerStatefulWidget {
@@ -43,17 +40,14 @@ class _HomePageState extends ConsumerState<HomePage>
       }
     });
 
-    // Verificar permiso al iniciar
     _checkPermission();
 
-    // Inicializar el servicio de historial
     HistoryService.initialize();
   }
 
   Future<void> _checkPermission() async {
     final hasPermission = await UssdService.hasCallPermission();
     if (!hasPermission) {
-      // Solicitar permiso si no lo tiene
       await UssdService.requestCallPermission();
     }
   }
@@ -66,14 +60,12 @@ class _HomePageState extends ConsumerState<HomePage>
   }
 
   void handleMenuAction(MenuItems item) async {
-    // Caso especial para Asterisco 99
     if (item.title == "Asterisco 99") {
       await _handleAsterisco99();
       return;
     }
 
     if (item.ussdCode != null && !ref.read(executingUssdProvider)) {
-      // Mostrar diálogo de confirmación
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -123,13 +115,11 @@ class _HomePageState extends ConsumerState<HomePage>
 
       if (confirm != true) return;
 
-      // Evitar múltiples ejecuciones simultáneas
       ref.read(executingUssdProvider.notifier).state = true;
       ref.read(statusMessageProvider.notifier).state =
           "Ejecutando código USSD...";
 
       try {
-        // Formatear el código USSD correctamente
         var ussdCode = item.ussdCode!.trim();
         if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
           ussdCode = "*$ussdCode";
@@ -141,12 +131,12 @@ class _HomePageState extends ConsumerState<HomePage>
 
         final success = await UssdService.executeUssd(ussdCode);
 
-        if (!mounted) return; // Verificar si el widget está montado
+        if (!mounted) return;
 
         if (success) {
           ref.read(statusMessageProvider.notifier).state =
               "Código USSD ejecutado correctamente";
-          // Agregar al historial si se ejecutó correctamente
+
           HistoryService.addToHistory(item, ussdCode);
         } else {
           ref.read(statusMessageProvider.notifier).state =
@@ -161,7 +151,6 @@ class _HomePageState extends ConsumerState<HomePage>
         if (mounted) {
           ref.read(executingUssdProvider.notifier).state = false;
 
-          // Limpiar el mensaje después de 3 segundos
           Future.delayed(const Duration(seconds: 3), () {
             if (mounted) {
               ref.read(statusMessageProvider.notifier).state = null;
@@ -172,9 +161,7 @@ class _HomePageState extends ConsumerState<HomePage>
     }
   }
 
-  // Modificar el método _handleAsterisco99 para navegar a la página Asterisco99Page
   Future<void> _handleAsterisco99() async {
-    // Navegar a la página Asterisco99Page
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -183,17 +170,12 @@ class _HomePageState extends ConsumerState<HomePage>
     );
   }
 
-  // Método para actualizar el mensaje de estado desde la vista de historial
-  void updateStatusMessage(String message) {
-    // No hacer nada - mensajes de estado desactivados
-  }
+  void updateStatusMessage(String message) {}
 
-  // Método para cambiar el tema
   void _toggleTheme() {
     final currentThemeMode = ref.read(themeModeProvider);
     ThemeMode newThemeMode;
 
-    // Rotar entre los modos: sistema -> claro -> oscuro -> sistema
     switch (currentThemeMode) {
       case ThemeMode.system:
         newThemeMode = ThemeMode.light;
@@ -218,9 +200,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final isDark = isDarkMode(context);
     final theme = Theme.of(context);
     final backgroundColor = theme.scaffoldBackgroundColor;
-    //final textColor = theme.colorScheme.onSurface;
 
-    // Determinar qué icono mostrar según el modo de tema
     IconData themeIcon;
     switch (themeMode) {
       case ThemeMode.light:
@@ -251,7 +231,6 @@ class _HomePageState extends ConsumerState<HomePage>
         backgroundColor: backgroundColor,
         elevation: 0,
         actions: [
-          // Botón de cambio de tema
           IconButton(
             icon: Icon(
               themeIcon,
@@ -259,19 +238,16 @@ class _HomePageState extends ConsumerState<HomePage>
             ),
             onPressed: _toggleTheme,
           ),
-          // Espacio para equilibrar el diseño
           const SizedBox(width: 8),
         ],
       ),
       body: Column(
         children: [
-          // Iconos de navegación superiores
           Container(
             padding: const EdgeInsets.only(top: 2, bottom: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icono de teléfono
                 InkWell(
                   onTap: () {
                     _pageController.animateToPage(
@@ -307,7 +283,6 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Icono de historial
                 InkWell(
                   onTap: () {
                     _pageController.animateToPage(
@@ -345,18 +320,14 @@ class _HomePageState extends ConsumerState<HomePage>
               ],
             ),
           ),
-
-          // PageView con las dos vistas
           Expanded(
             child: PageView(
               controller: _pageController,
               children: [
-                // Vista principal
                 MenuList(
                   items: menuItems,
                   onItemTap: (context, item) => handleMenuAction(item),
                 ),
-                // Vista de historial
                 HistoryView(
                   onStatusMessage: updateStatusMessage,
                 ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bono/widgets/shared/items.dart';
 
-/// Widget para mostrar un elemento de menú en forma de tarjeta
 class MenuItemCard extends StatelessWidget {
   final MenuItems item;
   final String? heroTag;
@@ -34,7 +33,6 @@ class MenuItemCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
             child: Row(
               children: [
-                // Envolver el CircleAvatar en un Hero para la animación
                 heroTag != null
                     ? Hero(
                         tag: heroTag!,
@@ -85,7 +83,6 @@ class MenuItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Flecha a la derecha para elementos con submenú o navegación adicional
                 if (showChevron)
                   const Icon(
                     Icons.chevron_right,

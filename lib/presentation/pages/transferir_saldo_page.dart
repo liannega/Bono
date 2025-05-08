@@ -21,11 +21,10 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
   bool _amountHasError = false;
   bool _claveHasError = false;
   bool _isExecutingCall = false;
-  bool _obscureText = true; // Para controlar la visibilidad de la clave
+  bool _obscureText = true;
 
-  // Canal para USSD
   static const platform = MethodChannel('com.example.bono/ussd');
-  // Canal para contactos
+
   static const contactsChannel = MethodChannel('com.example.bono/contacts');
 
   @override
@@ -36,31 +35,25 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
     super.dispose();
   }
 
-  // Método para seleccionar contacto
   Future<void> _selectContact() async {
     try {
-      // Verificar permiso de contactos
       final hasPermission =
           await contactsChannel.invokeMethod('hasContactsPermission');
       if (!hasPermission) {
         await contactsChannel.invokeMethod('requestContactsPermission');
       }
 
-      // Abrir directamente el selector de contactos nativo
       final String phoneNumber =
           await contactsChannel.invokeMethod('pickContact');
 
       if (phoneNumber.isNotEmpty) {
-        // Eliminar el prefijo +53 si existe
         String cleanNumber = phoneNumber;
         if (cleanNumber.startsWith('+53')) {
           cleanNumber = cleanNumber.substring(3);
         }
 
-        // Eliminar cualquier carácter que no sea dígito
         cleanNumber = cleanNumber.replaceAll(RegExp(r'[^\d]'), '');
 
-        // Tomar solo los últimos 8 dígitos si el número es más largo
         if (cleanNumber.length > 8) {
           cleanNumber = cleanNumber.substring(cleanNumber.length - 8);
         }
@@ -71,7 +64,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
         });
       }
     } catch (e) {
-      // Mostrar un mensaje de error pero no un diálogo
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -87,16 +79,13 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
     }
   }
 
-  // Método para realizar la transferencia
   Future<void> _makeTransfer() async {
-    // Validar campos
     setState(() {
       _phoneHasError = _phoneController.text.isEmpty;
       _amountHasError = _amountController.text.isEmpty;
       _claveHasError = _claveController.text.isEmpty;
     });
 
-    // Si hay algún error, no continuar
     if (_phoneHasError || _amountHasError || _claveHasError) {
       return;
     }
@@ -105,7 +94,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
     final amount = _amountController.text.trim();
     final clave = _claveController.text.trim();
 
-    // Mostrar diálogo de confirmación con resumen de la transferencia
     final theme = Theme.of(context);
     final backgroundColor = theme.dialogBackgroundColor;
     final textColor = theme.colorScheme.onSurface;
@@ -210,27 +198,21 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
     });
 
     try {
-      // Formatear el código USSD para transferencia
       final ussdCode = "*234*1*$phone*$amount*$clave";
 
-      // Ejecutar el código USSD
       final success = await UssdService.executeUssd(ussdCode);
 
       if (success && mounted) {
-        // Crear un elemento de menú temporal para el historial
         const transferItem = MenuItems(
           title: "Transferir Saldo",
-          subtitle: "", // No incluir detalles en el subtítulo
+          subtitle: "",
           icon: Icons.send_to_mobile,
-          color: Colors.orange, // Cambiar a naranja como en la imagen
-          ussdCode:
-              "*234", // Solo mostrar el código base sin información sensible
+          color: Colors.orange,
+          ussdCode: "*234",
         );
 
-        // Agregar al historial
         await HistoryService.addToHistory(transferItem, "*234");
 
-        // Volver a la pantalla anterior
         // ignore: use_build_context_synchronously
         Navigator.pop(context);
       }
@@ -257,17 +239,14 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
     }
   }
 
-  // Determinar si un campo debe tener borde azul
   Color _getBorderColor(
       TextEditingController controller, bool hasError, int maxLength,
       {bool isAmount = false}) {
     if (hasError) {
       return Colors.red;
     } else if (isAmount && controller.text.isNotEmpty) {
-      // Para el campo de cantidad, se pone azul cuando tiene al menos 1 dígito
       return Colors.blue;
     } else if (!isAmount && controller.text.length == maxLength) {
-      // Para otros campos, se pone azul cuando tiene la longitud máxima
       return Colors.blue;
     } else {
       return Colors.red.withOpacity(0.5);
@@ -305,7 +284,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              // Icono de transferencia con Hero (solo flecha en círculo azul)
               const SizedBox(height: 40),
               const Hero(
                 tag: 'menu_icon_Transferir_saldo',
@@ -320,8 +298,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                 ),
               ),
               const SizedBox(height: 40),
-
-              // Campo de teléfono
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -332,7 +308,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                 ),
                 child: Row(
                   children: [
-                    // Ícono de teléfono a la izquierda
                     Container(
                       padding: const EdgeInsets.all(12),
                       child: const Icon(
@@ -341,7 +316,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         size: 24,
                       ),
                     ),
-                    // Campo de texto
                     Expanded(
                       child: TextField(
                         controller: _phoneController,
@@ -373,7 +347,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         },
                       ),
                     ),
-                    // Ícono de contactos a la derecha
                     GestureDetector(
                       onTap: _selectContact,
                       child: Container(
@@ -388,14 +361,12 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-              // Mensaje de error y contador para teléfono
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Mensaje de error
                     Text(
                       _phoneHasError ? 'Este campo no debe estar vacío' : '',
                       style: GoogleFonts.montserrat(
@@ -404,7 +375,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         letterSpacing: -0.3,
                       ),
                     ),
-                    // Contador de caracteres
                     Text(
                       '${_phoneController.text.length}/8',
                       style: GoogleFonts.montserrat(
@@ -416,10 +386,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 10),
-
-              // Campo de cantidad
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -432,7 +399,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                 ),
                 child: Row(
                   children: [
-                    // Ícono de dinero a la izquierda
                     Container(
                       padding: const EdgeInsets.all(12),
                       child: const Icon(
@@ -441,7 +407,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         size: 24,
                       ),
                     ),
-                    // Campo de texto
                     Expanded(
                       child: TextField(
                         controller: _amountController,
@@ -476,14 +441,12 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-              // Mensaje de error y contador para cantidad
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Mensaje de error
                     Text(
                       _amountHasError ? 'Este campo no debe estar vacío' : '',
                       style: GoogleFonts.montserrat(
@@ -492,7 +455,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         letterSpacing: -0.3,
                       ),
                     ),
-                    // Contador de caracteres
                     Text(
                       '${_amountController.text.length}/4',
                       style: GoogleFonts.montserrat(
@@ -504,8 +466,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-
-              // Título CLAVE
               Padding(
                 padding: const EdgeInsets.only(top: 10.0, bottom: 8.0),
                 child: Row(
@@ -535,8 +495,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-
-              // Campo de clave
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -547,7 +505,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                 ),
                 child: Row(
                   children: [
-                    // Ícono de llave a la izquierda
                     Container(
                       padding: const EdgeInsets.all(12),
                       child: const Icon(
@@ -556,7 +513,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         size: 24,
                       ),
                     ),
-                    // Campo de texto
                     Expanded(
                       child: TextField(
                         controller: _claveController,
@@ -589,7 +545,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         },
                       ),
                     ),
-                    // Icono para mostrar/ocultar clave
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -610,7 +565,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-              // Mensaje de error y contador para clave
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -626,7 +580,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                         letterSpacing: -0.3,
                       ),
                     ),
-                    // Contador de caracteres
+
                     Text(
                       '${_claveController.text.length}/4',
                       style: GoogleFonts.montserrat(
@@ -638,8 +592,6 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
                   ],
                 ),
               ),
-
-              // Botón de transferencia
               Padding(
                 padding: const EdgeInsets.only(top: 40.0, bottom: 40.0),
                 child: SizedBox(

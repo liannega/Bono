@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 class UssdService {
   static const MethodChannel _channel = MethodChannel('com.example.bono/ussd');
 
-  // Verificar si tiene permiso de llamada
+  
   static Future<bool> hasCallPermission() async {
     try {
       final bool result = await _channel.invokeMethod('hasCallPermission');
@@ -14,7 +14,7 @@ class UssdService {
     }
   }
 
-  // Solicitar permiso de llamada
+ 
   static Future<void> requestCallPermission() async {
     try {
       await _channel.invokeMethod('requestCallPermission');
@@ -23,10 +23,10 @@ class UssdService {
     }
   }
 
-  // Método para ejecutar códigos USSD
+
   static Future<bool> executeUssd(String code) async {
     try {
-      // Verificar permiso
+    
       bool hasPermission = await hasCallPermission();
       if (!hasPermission) {
         await requestCallPermission();
@@ -36,10 +36,8 @@ class UssdService {
         }
       }
 
-      // Formatear el código USSD correctamente
       var ussdCode = code.trim();
 
-      // Asegurarse de que el código tenga el formato correcto
       if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
         ussdCode = "*$ussdCode";
       }
@@ -48,7 +46,7 @@ class UssdService {
         ussdCode = "$ussdCode#";
       }
 
-      // Ejecutar el código USSD
+
       final bool? result = await _channel.invokeMethod('executeUssd', {
         'code': ussdCode,
       });

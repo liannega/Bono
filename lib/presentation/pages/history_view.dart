@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 
 import 'package:bono/services/history_service.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +48,6 @@ class _HistoryViewState extends State<HistoryView> {
     });
   }
 
-  // Modificar el método _executeUssdFromHistory para manejar el caso de Transferir Saldo
   Future<void> _executeUssdFromHistory(HistoryItem item) async {
     if (_isExecutingUssd) return;
 
@@ -57,48 +56,35 @@ class _HistoryViewState extends State<HistoryView> {
     });
 
     try {
-      // Casos especiales para Asterisco 99, Mi número oculto, Números útiles y Transferir Saldo
       if (item.title == "Asterisco 99") {
-        // Navegar a la página Asterisco99Page sin pasar número
         if (mounted) {
-          // Actualizar la fecha del elemento actual para que aparezca primero
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          // Usar GoRouter para navegar
           context.go('/asterisco99');
         }
         return;
       } else if (item.title == "Mi número oculto") {
-        // Navegar a la página NumeroOcultoPage sin pasar número
         if (mounted) {
-          // Actualizar la fecha del elemento actual para que aparezca primero
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          // Usar GoRouter para navegar
           context.go('/numero-oculto');
         }
         return;
       } else if (item.title == "Números útiles") {
-        // Navegar a la página NumerosUtilesPage
         if (mounted) {
-          // Actualizar la fecha del elemento actual para que aparezca primero
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          // Usar GoRouter para navegar
           context.go('/numeros-utiles');
         }
         return;
       } else if (item.title == "Transferir Saldo") {
-        // Navegar a la página TransferirSaldoPage
         if (mounted) {
-          // Actualizar la fecha del elemento actual para que aparezca primero
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          // Usar GoRouter para navegar
           context.go('/transferir-saldo');
         }
         return;
@@ -109,13 +95,10 @@ class _HistoryViewState extends State<HistoryView> {
           item.title.contains("Policía") ||
           item.title.contains("Salvamento Marítimo") ||
           item.title.contains("Cubacel Info")) {
-        // Realizar llamada directa para números útiles
         try {
-          // Actualizar la fecha del elemento actual
           await _updateHistoryItemTimestamp(item);
           await _loadHistory();
 
-          // Ejecutar la llamada directamente usando el método nativo
           await ussdPlatform.invokeMethod('makeDirectCall', {
             'phoneNumber': item.code.replaceAll("#", ""),
           });
@@ -137,7 +120,6 @@ class _HistoryViewState extends State<HistoryView> {
         return;
       }
 
-      // Para otros casos, ejecutar el código USSD normalmente
       var ussdCode = item.code.trim();
       if (!ussdCode.startsWith("*") && !ussdCode.startsWith("#")) {
         ussdCode = "*$ussdCode";
@@ -147,20 +129,16 @@ class _HistoryViewState extends State<HistoryView> {
         ussdCode = "$ussdCode#";
       }
 
-      // Ejecutar el código USSD
       final success = await UssdService.executeUssd(ussdCode);
 
       if (!mounted) return;
 
       if (success) {
-        // No agregamos al historial cuando se ejecuta desde la vista de historial
-        // Solo actualizamos la fecha del elemento actual
         await _updateHistoryItemTimestamp(item);
         await _loadHistory();
       }
     } catch (e) {
       if (mounted) {
-        // Mostrar error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -182,19 +160,16 @@ class _HistoryViewState extends State<HistoryView> {
     }
   }
 
-  // Método para actualizar la fecha de un elemento del historial
   Future<void> _updateHistoryItemTimestamp(HistoryItem item) async {
-    // Crear un nuevo elemento con la misma información pero con la fecha actual
     final updatedItem = HistoryItem(
       title: item.title,
       subtitle: item.subtitle,
       icon: item.icon,
-      color: item.color, // Mantener el color original
+      color: item.color,
       code: item.code,
       timestamp: DateTime.now(),
     );
 
-    // Eliminar el elemento antiguo y agregar el actualizado
     await HistoryService.updateHistoryItem(item, updatedItem);
   }
 
@@ -265,7 +240,6 @@ class _HistoryViewState extends State<HistoryView> {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
-    //final backgroundColor = Theme.of(context).colorScheme.surface;
 
     if (_isLoading) {
       return const Center(
@@ -311,7 +285,6 @@ class _HistoryViewState extends State<HistoryView> {
 
     return Column(
       children: [
-        // Botón para limpiar historial
         Align(
           alignment: Alignment.centerRight,
           child: Padding(
@@ -349,8 +322,6 @@ class _HistoryViewState extends State<HistoryView> {
             ),
           ),
         ),
-
-        // Lista de historial
         Expanded(
           child: ListView.builder(
             itemCount: _historyItems.length,
@@ -359,7 +330,6 @@ class _HistoryViewState extends State<HistoryView> {
               final formattedDate =
                   DateFormat('dd/MM/yyyy HH:mm').format(item.timestamp);
 
-              // Determinar si es una transferencia de saldo
               final isTransfer = item.title == "Transferir Saldo";
 
               return Padding(
@@ -406,7 +376,6 @@ class _HistoryViewState extends State<HistoryView> {
                                     height: 1.1,
                                   ),
                                 ),
-                                // Para transferencias, no mostrar subtítulo
                                 if (item.subtitle != null && !isTransfer)
                                   Text(
                                     item.subtitle!,

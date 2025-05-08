@@ -27,7 +27,6 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
     super.dispose();
   }
 
-  // Determinar si un campo debe tener borde azul
   Color _getBorderColor(
       TextEditingController controller, bool hasError, int maxLength) {
     if (hasError) {
@@ -56,31 +55,24 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
     });
 
     try {
-      // Extraer solo los 8 dígitos del número
-      // Si el número comienza con +53, eliminarlo
       if (phone.startsWith('+53')) {
         phone = phone.substring(3);
       }
 
-      // Eliminar cualquier carácter que no sea dígito
       phone = phone.replaceAll(RegExp(r'[^\d]'), '');
 
-      // Tomar solo los últimos 8 dígitos si el número es más largo
       if (phone.length > 8) {
         phone = phone.substring(phone.length - 8);
       }
 
-      // Formatear el número con *99 delante para la llamada (sin asterisco adicional)
       final callNumber = "*99$phone";
 
-      // Crear la URI para la llamada
       final Uri callUri = Uri(scheme: 'tel', path: callNumber);
 
       // Realizar la llamada
       if (await canLaunchUrl(callUri)) {
         await launchUrl(callUri);
 
-        // Crear un elemento de menú temporal para el historial
         final callItem = MenuItems(
           title: "Asterisco 99",
           subtitle: "Llamada con pago revertido a: $phone",
@@ -89,13 +81,11 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
           ussdCode: "*99$phone#",
         );
 
-        // Primero verificar si ya existe una entrada para Asterisco 99
         final history = await HistoryService.getHistory();
         final existingItem =
             history.where((item) => item.title == "Asterisco 99").toList();
 
         if (existingItem.isNotEmpty) {
-          // Si existe, actualizar la entrada existente
           final updatedItem = HistoryItem(
             title: "Asterisco 99",
             subtitle: "Llamada con pago revertido a: $phone",
@@ -107,11 +97,9 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
           await HistoryService.updateHistoryItem(
               existingItem.first, updatedItem);
         } else {
-          // Si no existe, agregar una nueva entrada
           await HistoryService.addToHistory(callItem, "*99$phone#");
         }
 
-        // Volver a la pantalla anterior después de iniciar la llamada
         if (mounted) {
           Navigator.pop(context);
         }
@@ -151,20 +139,16 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
         await platform.invokeMethod('requestContactsPermission');
       }
 
-      // Abrir directamente el selector de contactos nativo
       final String phoneNumber = await platform.invokeMethod('pickContact');
 
       if (phoneNumber.isNotEmpty) {
-        // Eliminar el prefijo +53 si existe
         String cleanNumber = phoneNumber;
         if (cleanNumber.startsWith('+53')) {
           cleanNumber = cleanNumber.substring(3);
         }
 
-        // Eliminar cualquier carácter que no sea dígito
         cleanNumber = cleanNumber.replaceAll(RegExp(r'[^\d]'), '');
 
-        // Tomar solo los últimos 8 dígitos si el número es más largo
         if (cleanNumber.length > 8) {
           cleanNumber = cleanNumber.substring(cleanNumber.length - 8);
         }
@@ -175,7 +159,6 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
         });
       }
     } catch (e) {
-      // Mostrar un mensaje de error pero no un diálogo
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -236,7 +219,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
               ),
             ),
             const SizedBox(height: 40),
-            // Campo de entrada de teléfono
+
             Container(
               decoration: BoxDecoration(
                 border: Border.all(
@@ -247,7 +230,6 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
               ),
               child: Row(
                 children: [
-                  // Ícono de teléfono a la izquierda
                   Container(
                     padding: const EdgeInsets.all(12),
                     child: const Icon(
@@ -282,7 +264,6 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                       onChanged: (value) {
-                        // Forzar actualización del estado para que se actualice el color del borde
                         setState(() {
                           if (_hasError && value.isNotEmpty) {
                             _hasError = false;
@@ -291,7 +272,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
                       },
                     ),
                   ),
-                  // Ícono de contactos a la derecha
+
                   GestureDetector(
                     onTap: _selectContact,
                     child: Container(
@@ -306,7 +287,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
                 ],
               ),
             ),
-            // Mensaje de error y contador
+
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -335,7 +316,7 @@ class _Asterisco99PageState extends State<Asterisco99Page> {
               ),
             ),
             const SizedBox(height: 20),
-            // Botón de llamada
+
             SizedBox(
               width: double.infinity,
               height: 50,

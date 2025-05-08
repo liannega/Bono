@@ -16,12 +16,11 @@ class MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.only(
-          top: 5, bottom: 10), // Reducido de top: 10, bottom: 20
+      padding: const EdgeInsets.only(top: 5, bottom: 10),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        // Crear un tag único y consistente para cada elemento
+
         final heroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
 
         return ItemGeneral(
@@ -37,10 +36,8 @@ class MenuList extends StatelessWidget {
     );
   }
 
-  // Modificar el método _handleItemTap para asegurar que los tags de Hero sean consistentes
   void _handleItemTap(BuildContext context, MenuItems item, String heroTag) {
     if (item.hasSubmenu && item.submenuItems != null) {
-      // Crear un tag consistente para el Hero basado en el título del elemento
       final consistentHeroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
 
       Navigator.push(
@@ -56,7 +53,6 @@ class MenuList extends StatelessWidget {
         ),
       );
     } else {
-      // Llamar a la función onItemTap para manejar otros casos
       onItemTap(context, item);
     }
   }

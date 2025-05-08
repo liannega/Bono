@@ -39,7 +39,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
     _checkPermission();
   }
 
-  // Verificar y solicitar permisos necesarios
   Future<void> _checkPermission() async {
     final hasPermission = await UssdService.hasCallPermission();
     if (!hasPermission) {
@@ -47,25 +46,19 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Actualizar el estado de ejecución USSD
   void _setExecuting(bool isExecuting) {
     setState(() {
       _isExecutingUssd = isExecuting;
     });
   }
 
-  // Actualizar el mensaje de estado
-  void _setStatusMessage(String? message) {
-    // No hacer nada - mensajes de estado desactivados
-  }
+  void _setStatusMessage(String? message) {}
 
-  // Obtener el icono grande para mostrar en la parte superior según el título
   Widget _getHeaderIcon() {
-    double iconSize = 30.0; // Reducido de 34.0 a 30.0
+    double iconSize = 30.0;
     Color iconColor = Colors.white;
     Color backgroundColor = Colors.blue;
 
-    // Mapa de títulos a iconos para simplificar la lógica
     final Map<String, IconData> titleIcons = {
       "Planes Combinados": Icons.sync,
       "Planes de Datos": Icons.data_usage,
@@ -78,20 +71,16 @@ class _SubmenuPageState extends State<SubmenuPage> {
       "Gestionar Llamadas": Icons.call,
     };
 
-    // Buscar el icono en el mapa o usar el icono padre o uno por defecto
     IconData iconData =
         titleIcons[widget.title] ?? widget.parentIcon ?? Icons.folder_open;
 
-    // Crear un tag consistente para el Hero
-    // Usar el título del elemento actual para que sea único pero consistente
     final heroTag = 'menu_icon_${widget.title.replaceAll(" ", "_")}';
 
-    // Crear un CircleAvatar con Hero para la animación
     return Hero(
       tag: heroTag,
       child: Container(
-        width: 65, // Reducido de 75 a 65
-        height: 65, // Reducido de 75 a 65
+        width: 65,
+        height: 65,
         decoration: BoxDecoration(
           color: backgroundColor,
           shape: BoxShape.circle,
@@ -112,12 +101,9 @@ class _SubmenuPageState extends State<SubmenuPage> {
     );
   }
 
-  // Determinar si un elemento debe mostrar una flecha a la derecha
   bool _shouldShowChevron(MenuItems item) {
-    // Mostrar flecha para elementos con submenú
     if (item.hasSubmenu) return true;
 
-    // Mostrar flecha para elementos específicos que tienen navegación adicional
     if (widget.title == "Planes de Datos") {
       return item.title == "Tarifa por consumo" ||
           item.title == "SOLO Líneas USIM con LTE (nuevas)";
@@ -126,18 +112,14 @@ class _SubmenuPageState extends State<SubmenuPage> {
     return false;
   }
 
-  // Método principal para manejar los toques en los elementos
   void _handleItemTap(
       BuildContext context, MenuItems item, String heroTag) async {
-    // Manejar casos especiales para Gestionar Llamadas
     if (widget.title == "Gestionar Llamadas") {
       _handleCallManagementItem(context, item, heroTag);
       return;
     }
 
-    // Manejar elementos con submenú
     if (item.hasSubmenu && item.submenuItems != null) {
-      // Crear un tag consistente para el Hero basado en el título del elemento
       final consistentHeroTag = 'menu_icon_${item.title.replaceAll(" ", "_")}';
 
       Navigator.push(
@@ -156,13 +138,11 @@ class _SubmenuPageState extends State<SubmenuPage> {
       return;
     }
 
-    // Manejar elementos con código USSD
     if (item.ussdCode != null) {
       await _handleUssdItem(context, item);
       return;
     }
 
-    // Manejar otros casos específicos
     switch (item.title) {
       case "Recargar":
         _showRechargeDialog(context);
@@ -176,47 +156,24 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Manejar elementos específicos del menú Gestionar Llamadas
   void _handleCallManagementItem(
       BuildContext context, MenuItems item, String heroTag) {
-    // Usar tags consistentes para la animación Hero
     switch (item.title) {
       case "Asterisco 99":
-        // Crear un tag consistente para la animación Hero
         context.go('/asterisco99');
         break;
       case "Mi número oculto":
-        // Crear un tag consistente para la animación Hero
         context.go('/numero-oculto');
         break;
       case "Números útiles":
-        // Crear un tag consistente para la animación Hero
         context.go('/numeros-utiles');
         break;
     }
   }
 
-  // Navegar a un submenú
-  void _navigateToSubmenu(
-      BuildContext context, MenuItems item, String heroTag) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SubmenuPage(
-          title: item.title,
-          items: item.submenuItems!,
-          parentHeroTag: heroTag,
-          parentIcon: item.icon,
-          parentColor: item.color,
-          parentTitle: widget.title,
-        ),
-      ),
-    );
-  }
+ 
 
-  // Manejar elementos con código USSD
   Future<void> _handleUssdItem(BuildContext context, MenuItems item) async {
-    // Determinar si se debe ejecutar directamente o mostrar confirmación
     bool executeDirectly = widget.title.startsWith("Plan") ||
         widget.title == "Gestionar Planes" ||
         widget.title == "Tarifa por consumo" ||
@@ -235,7 +192,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Ejecutar código USSD con confirmación previa
   Future<void> _executeUssdWithConfirmation(MenuItems item) async {
     if (_isExecutingUssd) return;
 
@@ -256,7 +212,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Diálogo para recargar
   void _showRechargeDialog(BuildContext context) async {
     final code = await DialogService.showInputDialog(
       context: context,
@@ -268,7 +223,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
     );
 
     if (code != null && code.isNotEmpty && mounted) {
-      // Crear un elemento de menú temporal para el historial
       final rechargeItem = MenuItems(
         title: "Recargar Saldo",
         subtitle: "Código: $code",
@@ -277,7 +231,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
         ussdCode: "*662*$code",
       );
 
-      // Ejecutar el código de recarga
       await UssdExecutorService.executeUssdCodeDirectly(
         code: "*662*$code",
         item: rechargeItem,
@@ -287,13 +240,10 @@ class _SubmenuPageState extends State<SubmenuPage> {
     }
   }
 
-  // Diálogo para transferir saldo
   void _showTransferDialog(BuildContext context) {
-    // Usar GoRouter para navegar
     context.go('/transferir-saldo');
   }
 
-  // Diálogo para llamada normal
   void _showDialerDialog(BuildContext context) async {
     final phone = await DialogService.showInputDialog(
       context: context,
@@ -305,7 +255,6 @@ class _SubmenuPageState extends State<SubmenuPage> {
     );
 
     if (phone != null && phone.isNotEmpty && mounted) {
-      // Crear un elemento de menú temporal para el historial
       final callItem = MenuItems(
         title: "Llamada",
         subtitle: "Número: $phone",
@@ -358,16 +307,14 @@ class _SubmenuPageState extends State<SubmenuPage> {
       ),
       body: Column(
         children: [
-          // Mostrar solo un icono, ya sea el del padre o el generado por _getHeaderIcon
           Padding(
-            padding: const EdgeInsets.symmetric(
-                vertical: 8.0), // Reducido de 12.0 a 8.0
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: widget.parentHeroTag != null && !isPlanSubmenu
                 ? Hero(
                     tag: widget.parentHeroTag!,
                     child: Container(
-                      width: 65, // Reducido de 75 a 65
-                      height: 65, // Reducido de 75 a 65
+                      width: 65,
+                      height: 65,
                       decoration: BoxDecoration(
                         color: widget.parentColor ?? Colors.blue,
                         shape: BoxShape.circle,
@@ -385,7 +332,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
                       child: Icon(
                         widget.parentIcon ?? Icons.folder_open,
                         color: Colors.white,
-                        size: 30, // Reducido de 34 a 30
+                        size: 30,
                       ),
                     ),
                   )
@@ -393,17 +340,13 @@ class _SubmenuPageState extends State<SubmenuPage> {
                     ? _getHeaderIcon()
                     : const SizedBox.shrink(),
           ),
-
-          // Lista de elementos
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 4.0), // Reducido de 8.0 a 4.0
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
               itemCount: widget.items.length,
               itemBuilder: (context, index) {
                 final item = widget.items[index];
 
-                // Crear un tag único para cada elemento del submenú
                 final heroTag = 'submenu_icon_${widget.title}_${item.title}'
                     .replaceAll(" ", "_");
 

@@ -7,7 +7,6 @@ class WidgetService {
   static const MethodChannel _ussdChannel =
       MethodChannel('com.example.bono/ussd');
 
-  // Activar el widget
   static Future<void> enableWidget() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -19,7 +18,6 @@ class WidgetService {
     }
   }
 
-  // Desactivar el widget
   static Future<void> disableWidget() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -31,7 +29,6 @@ class WidgetService {
     }
   }
 
-  // Activar/desactivar WiFi
   static Future<void> toggleWifi() async {
     try {
       await _channel.invokeMethod('toggleWifi');
@@ -40,7 +37,6 @@ class WidgetService {
     }
   }
 
-  // Activar/desactivar datos móviles
   static Future<void> toggleMobileData() async {
     try {
       await _channel.invokeMethod('toggleMobileData');
@@ -49,7 +45,6 @@ class WidgetService {
     }
   }
 
-  // Ejecutar código USSD
   static Future<void> executeUssdCode(String code) async {
     try {
       await _ussdChannel.invokeMethod('executeUssd', {'code': code});
