@@ -23,7 +23,7 @@ class _TransferirSaldoPageState extends State<TransferirSaldoPage> {
   bool _isExecutingCall = false;
   bool _obscureText = true;
 
-  static const platform = MethodChannel('com.example.bono/ussd');
+  // static const platform = MethodChannel('com.example.bono/ussd');
 
   static const contactsChannel = MethodChannel('com.example.bono/contacts');
 

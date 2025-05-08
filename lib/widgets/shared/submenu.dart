@@ -30,7 +30,7 @@ class SubmenuPage extends StatefulWidget {
 }
 
 class _SubmenuPageState extends State<SubmenuPage> {
-  String? _statusMessage;
+  // String? _statusMessage;
   bool _isExecutingUssd = false;
 
   @override
@@ -275,7 +275,7 @@ class _SubmenuPageState extends State<SubmenuPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isManagePlans = widget.title == "Gestionar Planes";
+    // final isManagePlans = widget.title == "Gestionar Planes";
     final isPlanSubmenu = widget.title.startsWith("Plan") ||
         widget.title == "Tarifa por consumo" ||
         widget.title == "SOLO Líneas USIM con LTE (nuevas)";
